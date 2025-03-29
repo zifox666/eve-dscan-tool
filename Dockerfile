@@ -15,6 +15,3 @@ RUN mkdir -p /data/sqlite
 # 修正暴露端口和启动命令
 EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-# 定义数据卷
-VOLUME ["/data/sqlite"]

@@ -12,10 +12,6 @@ class Settings:
 
     # 储存数据 数据库设置
     DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./dscan.sqlite")
-
-    # Redis设置
-    REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/5")
-    REDIS_EXPIRE = 3600  # 缓存过期时间（秒）
     
     # EVE ESI API设置
     ESI_BASE_URL = "https://esi.evetech.net/latest"
