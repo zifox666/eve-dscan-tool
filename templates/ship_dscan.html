@@ -246,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyLinkBtn = document.getElementById('copyLinkBtn');
     if (copyLinkBtn) {
         copyLinkBtn.addEventListener('click', function() {
-            const shareUrl = '{{ share_url }}';
-            navigator.clipboard.writeText(shareUrl).then(function() {
+            const baseUrl = '{{ base_url }}';
+            navigator.clipboard.writeText(baseUrl).then(function() {
                 // 显示复制成功提示
                 const originalText = copyLinkBtn.innerHTML;
                 copyLinkBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>复制成功';

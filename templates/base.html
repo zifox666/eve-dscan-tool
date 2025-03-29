@@ -156,6 +156,8 @@
 
             forms.forEach(form => {
                 form.addEventListener('submit', function() {
+                    // 移除之前可能存在的样式
+                    loadingSpinner.classList.remove('hidden');
                     loadingSpinner.classList.add('active');
                 });
             });
