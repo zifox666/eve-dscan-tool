@@ -103,7 +103,10 @@ async def view_local_dscan(
 
     if cached_data:
         # 使用缓存数据，但更新访问次数
-        dscan_data = json.loads(cached_data)
+        if isinstance(cached_data, str):
+            dscan_data = json.loads(cached_data)
+        else:
+            dscan_data = cached_data
         # 更新缓存中的访问次数
         dscan_data["view_count"] = dscan.view_count
     else:

@@ -118,8 +118,9 @@
                             {% endif %}
                         {% endif %}
                     {% endfor %}
-                    
-                    {% for alliance_id, count in alliance_counts.items() %}
+
+                    {% set sorted_alliances = alliance_counts.items()|list|sort(reverse=True, attribute="1") %}
+                    {% for alliance_id, count in sorted_alliances %}
                         {% set alliance = dscan.processed_data.alliances[alliance_id] %}
                         <div class="entity-item" data-alliance-id="{{ alliance.id }}" data-type="alliance">
                             <img src="https://images.evetech.net/alliances/{{ alliance.id }}/logo?size=32" alt="{{ alliance.name }}" class="entity-icon">
@@ -129,7 +130,7 @@
                             <div class="entity-count">{{ count }}</div>
                         </div>
                     {% endfor %}
-                    
+
                     <!-- 无联盟角色统计 -->
                     {% set without_alliance = 0 %}
                     {% for char_id, char in dscan.processed_data.characters.items() %}
@@ -137,7 +138,7 @@
                             {% set without_alliance = without_alliance + 1 %}
                         {% endif %}
                     {% endfor %}
-                    
+
                     {% if without_alliance > 0 %}
                     <div class="entity-item" data-alliance-id="none" data-type="alliance">
                         <div class="entity-icon flex items-center justify-center bg-gray-600">
@@ -151,7 +152,7 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <!-- 公司列 -->
             <div class="entity-column">
                 <div class="entity-header">公司</div>
@@ -165,16 +166,17 @@
                             {% set _ = corp_counts.update({corp_id: corp_counts[corp_id] + 1}) %}
                         {% endif %}
                     {% endfor %}
-                    
-                    {% for corp_id, count in corp_counts.items() %}
+
+                    {% set sorted_corps = corp_counts.items()|list|sort(reverse=True, attribute="1") %}
+                    {% for corp_id, count in sorted_corps %}
                         {% set corp = dscan.processed_data.corporations[corp_id] %}
                         {% set alliance_id = "none" %}
                         {% for char_id, character in dscan.processed_data.characters.items() %}
                             {% if character.corporation_id|string == corp_id and character.alliance_id %}
-                                {% set alliance_id = character.alliance_id|string %}                               
+                                {% set alliance_id = character.alliance_id|string %}
                             {% endif %}
                         {% endfor %}
-                        
+
                         <div class="entity-item" data-corp-id="{{ corp.id }}" data-alliance-id="{{ alliance_id }}" data-type="corporation">
                             <img src="https://images.evetech.net/corporations/{{ corp.id }}/logo?size=32" alt="{{ corp.name }}" class="entity-icon">
                             <div class="entity-name">

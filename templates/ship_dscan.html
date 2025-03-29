@@ -100,139 +100,147 @@
     </div>
 
     <!-- 四列布局：旗舰、普通舰船、建筑、其他 -->
-<div class="space-y-4">
-    <!-- 旗舰部分 -->
-    <div class="card">
-        <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">旗舰</h2>
-        <div class="grid grid-cols-2 gap-4">
-            <!-- 旗舰类型列 -->
-            <div class="entity-column">
-                <div class="entity-header">旗舰类型</div>
-                <div class="entity-list" id="capital-type-list">
-                    {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
-                        <div class="entity-item" data-capital-type="{{ capital_type }}" data-type="capital-type">
-                            <div class="entity-name">{{ capital_type }}</div>
-                            <div class="entity-distance">0</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <!-- 旗舰名称列 -->
-            <div class="entity-column">
-                <div class="entity-header">旗舰名称</div>
-                <div class="entity-list" id="capital-name-list">
-                    {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
-                        {% for capital in capitals %}
-                        <div class="entity-item" data-capital-name="{{ capital.name }}" data-capital-type="{{ capital_type }}" data-type="capital-name">
-                            <div class="entity-name">{{ capital.name }}</div>
-                            <div class="entity-distance">{{ capital.count }}</div>
-                        </div>
+    <div class="space-y-4">
+        <!-- 旗舰部分 -->
+        {% if dscan.processed_data.capital_types|length > 0 %}
+        <div class="card">
+            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">旗舰</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 旗舰类型列 -->
+                <div class="entity-column">
+                    <div class="entity-header">旗舰类型</div>
+                    <div class="entity-list" id="capital-type-list">
+                        {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
+                            <div class="entity-item" data-capital-type="{{ capital_type }}" data-type="capital-type">
+                                <div class="entity-name">{{ capital_type }}</div>
+                                <div class="entity-distance">0</div>
+                            </div>
                         {% endfor %}
-                    {% endfor %}
+                    </div>
+                </div>
+                <!-- 旗舰名称列 -->
+                <div class="entity-column">
+                    <div class="entity-header">旗舰名称</div>
+                    <div class="entity-list" id="capital-name-list">
+                        {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
+                            {% for capital in capitals %}
+                            <div class="entity-item" data-capital-name="{{ capital.name }}" data-capital-type="{{ capital_type }}" data-type="capital-name">
+                                <div class="entity-name">{{ capital.name }}</div>
+                                <div class="entity-distance">{{ capital.count }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        {% endif %}
 
-    <!-- 舰船部分 -->
-    <div class="card">
-        <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">舰船</h2>
-        <div class="grid grid-cols-2 gap-4">
-            <!-- 舰船类型列 -->
-            <div class="entity-column">
-                <div class="entity-header">舰船类型</div>
-                <div class="entity-list" id="ship-type-list">
-                    {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
-                        <div class="entity-item" data-ship-type="{{ ship_type }}" data-type="ship-type">
-                            <div class="entity-name">{{ ship_type }}</div>
-                            <div class="entity-distance">0</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <!-- 舰船名称列 -->
-            <div class="entity-column">
-                <div class="entity-header">舰船名称</div>
-                <div class="entity-list" id="ship-name-list">
-                    {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
-                        {% for ship in ships %}
-                        <div class="entity-item" data-ship-name="{{ ship.name }}" data-ship-type="{{ ship_type }}" data-type="ship-name">
-                            <div class="entity-name">{{ ship.name }}</div>
-                            <div class="entity-distance">{{ ship.count }}</div>
-                        </div>
+        <!-- 舰船部分 -->
+        {% if dscan.processed_data.ship_types|length > 0 %}
+        <div class="card">
+            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">舰船</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 舰船类型列 -->
+                <div class="entity-column">
+                    <div class="entity-header">舰船类型</div>
+                    <div class="entity-list" id="ship-type-list">
+                        {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
+                            <div class="entity-item" data-ship-type="{{ ship_type }}" data-type="ship-type">
+                                <div class="entity-name">{{ ship_type }}</div>
+                                <div class="entity-distance">0</div>
+                            </div>
                         {% endfor %}
-                    {% endfor %}
+                    </div>
+                </div>
+                <!-- 舰船名称列 -->
+                <div class="entity-column">
+                    <div class="entity-header">舰船名称</div>
+                    <div class="entity-list" id="ship-name-list">
+                        {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
+                            {% for ship in ships %}
+                            <div class="entity-item" data-ship-name="{{ ship.name }}" data-ship-type="{{ ship_type }}" data-type="ship-name">
+                                <div class="entity-name">{{ ship.name }}</div>
+                                <div class="entity-distance">{{ ship.count }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        {% endif %}
 
-    <!-- 建筑部分 -->
-    <div class="card">
-        <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">建筑</h2>
-        <div class="grid grid-cols-2 gap-4">
-            <!-- 建筑类型列 -->
-            <div class="entity-column">
-                <div class="entity-header">建筑类型</div>
-                <div class="entity-list" id="structure-type-list">
-                    {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
-                        <div class="entity-item" data-structure-type="{{ structure_type }}" data-type="structure-type">
-                            <div class="entity-name">{{ structure_type }}</div>
-                            <div class="entity-distance">0</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <!-- 建筑名称列 -->
-            <div class="entity-column">
-                <div class="entity-header">建筑名称</div>
-                <div class="entity-list" id="structure-name-list">
-                    {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
-                        {% for structure in structures %}
-                        <div class="entity-item" data-structure-name="{{ structure.name }}" data-structure-type="{{ structure_type }}" data-type="structure-name">
-                            <div class="entity-name">{{ structure.name }}</div>
-                            <div class="entity-distance">{{ structure.count }}</div>
-                        </div>
+        <!-- 建筑部分 -->
+        {% if dscan.processed_data.structure_types|length > 0 %}
+        <div class="card">
+            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">建筑</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 建筑类型列 -->
+                <div class="entity-column">
+                    <div class="entity-header">建筑类型</div>
+                    <div class="entity-list" id="structure-type-list">
+                        {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
+                            <div class="entity-item" data-structure-type="{{ structure_type }}" data-type="structure-type">
+                                <div class="entity-name">{{ structure_type }}</div>
+                                <div class="entity-distance">0</div>
+                            </div>
                         {% endfor %}
-                    {% endfor %}
+                    </div>
+                </div>
+                <!-- 建筑名称列 -->
+                <div class="entity-column">
+                    <div class="entity-header">建筑名称</div>
+                    <div class="entity-list" id="structure-name-list">
+                        {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
+                            {% for structure in structures %}
+                            <div class="entity-item" data-structure-name="{{ structure.name }}" data-structure-type="{{ structure_type }}" data-type="structure-name">
+                                <div class="entity-name">{{ structure.name }}</div>
+                                <div class="entity-distance">{{ structure.count }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+        {% endif %}
 
-    <!-- 其他部分 -->
-    <div class="card">
-        <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">其他</h2>
-        <div class="grid grid-cols-2 gap-4">
-            <!-- 其他类型列 -->
-            <div class="entity-column">
-                <div class="entity-header">其他类型</div>
-                <div class="entity-list" id="misc-type-list">
-                    {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
-                        <div class="entity-item" data-misc-type="{{ misc_type }}" data-type="misc-type">
-                            <div class="entity-name">{{ misc_type }}</div>
-                            <div class="entity-distance">0</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-            <!-- 其他名称列 -->
-            <div class="entity-column">
-                <div class="entity-header">其他名称</div>
-                <div class="entity-list" id="misc-name-list">
-                    {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
-                        {% for misc in miscs %}
-                        <div class="entity-item" data-misc-name="{{ misc.name }}" data-misc-type="{{ misc_type }}" data-type="misc-name">
-                            <div class="entity-name">{{ misc.name }}</div>
-                            <div class="entity-distance">{{ misc.count }}</div>
-                        </div>
+        <!-- 其他部分 -->
+        {% if dscan.processed_data.misc_types|length > 0 %}
+        <div class="card">
+            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4">其他</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <!-- 其他类型列 -->
+                <div class="entity-column">
+                    <div class="entity-header">其他类型</div>
+                    <div class="entity-list" id="misc-type-list">
+                        {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
+                            <div class="entity-item" data-misc-type="{{ misc_type }}" data-type="misc-type">
+                                <div class="entity-name">{{ misc_type }}</div>
+                                <div class="entity-distance">0</div>
+                            </div>
                         {% endfor %}
-                    {% endfor %}
+                    </div>
+                </div>
+                <!-- 其他名称列 -->
+                <div class="entity-column">
+                    <div class="entity-header">其他名称</div>
+                    <div class="entity-list" id="misc-name-list">
+                        {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
+                            {% for misc in miscs %}
+                            <div class="entity-item" data-misc-name="{{ misc.name }}" data-misc-type="{{ misc_type }}" data-type="misc-name">
+                                <div class="entity-name">{{ misc.name }}</div>
+                                <div class="entity-distance">{{ misc.count }}</div>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
-</div>
 
 
 </div>
