@@ -18,7 +18,7 @@
                 <textarea 
                     id="dscan_data" 
                     name="dscan_data" 
-                    rows="10" 
+                    rows="8"
                     placeholder="在此粘贴您的DScan数据..."
                     class="input-field"
                     required
@@ -30,6 +30,85 @@
                     <input type="checkbox" id="filter_distance" name="filter_distance" class="form-checkbox h-5 w-5 text-primary-600">
                     <span class="ml-2 text-gray-700 dark:text-gray-300">仅统计有距离信息的扫描结果</span>
                 </label>
+            </div>
+
+            <!-- 在表单中添加折叠面板 -->
+            <div class="mt-4">
+                <button type="button" id="toggleReconButton" class="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-75">
+                    <span>添加侦查舰</span>
+                    <svg id="reconArrow" class="w-5 h-5 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div id="reconPanel" class="mt-2 hidden">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead>
+                                    <tr>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">名称</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">数量</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                    <tr>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">休津级 (Huginn)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <span id="huginn-count" class="text-gray-800 dark:text-gray-200">0</span>
+                                            <input type="hidden" name="huginn_count" id="huginn_count" value="0">
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <div class="flex space-x-2">
+                                                <button type="button" class="recon-plus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="huginn">+1</button>
+                                                <button type="button" class="recon-minus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="huginn">-1</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">拉克希斯级 (Lachesis)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <span id="lachesis-count" class="text-gray-800 dark:text-gray-200">0</span>
+                                            <input type="hidden" name="lachesis_count" id="lachesis_count" value="0">
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <div class="flex space-x-2">
+                                                <button type="button" class="recon-plus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="lachesis">+1</button>
+                                                <button type="button" class="recon-minus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="lachesis">-1</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">白嘴鸦级 (Rook)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <span id="rook-count" class="text-gray-800 dark:text-gray-200">0</span>
+                                            <input type="hidden" name="rook_count" id="rook_count" value="0">
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <div class="flex space-x-2">
+                                                <button type="button" class="recon-plus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="rook">+1</button>
+                                                <button type="button" class="recon-minus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="rook">-1</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">诅咒级 (Curse)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <span id="curse-count" class="text-gray-800 dark:text-gray-200">0</span>
+                                            <input type="hidden" name="curse_count" id="curse_count" value="0">
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm">
+                                            <div class="flex space-x-2">
+                                                <button type="button" class="recon-plus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="curse">+1</button>
+                                                <button type="button" class="recon-minus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="curse">-1</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="flex justify-end">
@@ -61,6 +140,87 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
         loadingSpinner.classList.add('active');
     });
+});
+
+// 侦查舰折叠面板控制
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleButton = document.getElementById('toggleReconButton');
+    const reconPanel = document.getElementById('reconPanel');
+    const reconArrow = document.getElementById('reconArrow');
+    const form = document.querySelector('form');
+    const dscanDataTextarea = document.getElementById('dscan_data');
+
+    // 侦查舰信息配置
+    const reconShips = {
+        'huginn': { id: 11961, name: '休津级', display: '休津级' },
+        'lachesis': { id: 11971, name: '拉克希斯级', display: '拉克希斯级' },
+        'rook': { id: 11959, name: '白嘴鸦级', display: '白嘴鸦级' },
+        'curse': { id: 20125, name: '诅咒级', display: '诅咒级' }
+    };
+
+    // 切换折叠面板
+    if (toggleButton && reconPanel) {
+        toggleButton.addEventListener('click', function() {
+            reconPanel.classList.toggle('hidden');
+            reconArrow.classList.toggle('rotate-180');
+        });
+    }
+
+    // 增加/减少侦查舰数量
+    document.querySelectorAll('.recon-plus').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shipType = this.getAttribute('data-ship');
+            const countElement = document.getElementById(`${shipType}-count`);
+            const inputElement = document.getElementById(`${shipType}_count`);
+            let count = parseInt(countElement.textContent);
+            count++;
+            countElement.textContent = count;
+            inputElement.value = count;
+        });
+    });
+
+    document.querySelectorAll('.recon-minus').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const shipType = this.getAttribute('data-ship');
+            const countElement = document.getElementById(`${shipType}-count`);
+            const inputElement = document.getElementById(`${shipType}_count`);
+            let count = parseInt(countElement.textContent);
+            if (count > 0) {
+                count--;
+                countElement.textContent = count;
+                inputElement.value = count;
+            }
+        });
+    });
+
+    // 表单提交前处理
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            // 合并侦查舰数据到主dscan数据
+            let dscanData = dscanDataTextarea.value;
+            let additions = [];
+
+            for (const [shipKey, shipInfo] of Object.entries(reconShips)) {
+                const count = parseInt(document.getElementById(`${shipKey}_count`).value);
+                for (let i = 0; i < count; i++) {
+                    // 使用制表符(\t)替代空格来分隔数据
+                    additions.push(`${shipInfo.id}\t${shipInfo.name}\t${shipInfo.display}\t1km`);
+                }
+            }
+
+            if (additions.length > 0) {
+                // 确保dscan数据末尾有换行符
+                if (dscanData.trim() !== '') {
+                    if (!dscanData.endsWith('\n')) {
+                        dscanData += '\n';
+                    }
+                }
+                // 添加所有侦查舰数据
+                dscanData += additions.join('\n');
+                dscanDataTextarea.value = dscanData;
+            }
+        });
+    }
 });
 </script>
 {% endblock %}
