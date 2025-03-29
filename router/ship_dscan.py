@@ -180,20 +180,36 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]]) -> Dict[str, Any]
 
             result["stats"]["misc_count"] += 1
 
-    # 将嵌套字典转换为便于前端使用的格式
+    # 计算每个分组的总数量
+    group_totals = {}
     for category in ["ship_types", "capital_types", "structure_types", "misc_types"]:
+        for group, types in result[category].items():
+            group_totals[(category, group)] = sum(types.values())
+
+    # 将嵌套字典转换为便于前端使用的格式，并对组进行排序
+    for category in ["ship_types", "capital_types", "structure_types", "misc_types"]:
+        # 按组内总数量排序组
+        sorted_groups = sorted(
+            result[category].items(),
+            key=lambda x: sum(x[1].values()),
+            reverse=True
+        )
+
+        # 重构分类数据，按组内总数量排序组，每个组内按数量排序类型
         result[category] = {
             group: [{"name": type_name, "count": count}
                     for type_name, count in sorted(types.items(), key=lambda x: x[1], reverse=True)]
-            for group, types in result[category].items()
+            for group, types in sorted_groups
         }
 
     return result
-@router.get("/process", response_class=HTMLResponse)
+
+
+@router.post("/process", response_class=HTMLResponse)
 async def process_ship_dscan(
         request: Request,
-        data: str = Query(...),
-        filter_distance: bool = Query(False),
+        data: str = Form(...),
+        filter_distance: bool = Form(False),
         db: AsyncSession = Depends(get_db)
 ):
     """处理Ship DScan数据"""

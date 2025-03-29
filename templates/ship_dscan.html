@@ -113,7 +113,7 @@
                         {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
                             <div class="entity-item" data-capital-type="{{ capital_type }}" data-type="capital-type">
                                 <div class="entity-name">{{ capital_type }}</div>
-                                <div class="entity-distance">0</div>
+                                <div class="entity-distance">{{ capitals|sum(attribute='count') }}</div>
                             </div>
                         {% endfor %}
                     </div>
@@ -148,7 +148,7 @@
                         {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
                             <div class="entity-item" data-ship-type="{{ ship_type }}" data-type="ship-type">
                                 <div class="entity-name">{{ ship_type }}</div>
-                                <div class="entity-distance">0</div>
+                                <div class="entity-distance">{{ ships|sum(attribute='count') }}</div>
                             </div>
                         {% endfor %}
                     </div>

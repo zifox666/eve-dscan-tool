@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}重定向...{% endblock %}
+
+{% block content %}
+<div class="flex justify-center items-center h-screen">
+    <div class="text-center">
+        <h1 class="text-xl mb-4">正在处理数据...</h1>
+        <div class="spinner"></div>
+        <form id="redirectForm" method="post" action="{{ action }}">
+            {% for key, value in form_data.items() %}
+                <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('redirectForm').submit();
+    });
+</script>
+{% endblock %}

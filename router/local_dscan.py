@@ -22,10 +22,10 @@ router = APIRouter()
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
 
-@router.get("/process", response_class=HTMLResponse)
+@router.post("/process", response_class=HTMLResponse)
 async def process_local_dscan(
         request: Request,
-        data: str = Query(...),
+        data: str = Form(...),
         db: AsyncSession = Depends(get_db),
 ):
     """处理Local DScan数据"""
