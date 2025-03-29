@@ -17,16 +17,16 @@ def format_time_ago(dt: datetime) -> str:
     diff = now - dt
     
     if diff < timedelta(minutes=1):
-        return "刚刚"
+        return "Recently"
     elif diff < timedelta(hours=1):
         minutes = diff.seconds // 60
-        return f"{minutes} 分钟前"
+        return f"{minutes} min ago"
     elif diff < timedelta(days=1):
         hours = diff.seconds // 3600
-        return f"{hours} 小时前"
+        return f"{hours} hours ago"
     else:
         days = diff.days
-        return f"{days} 天前"
+        return f"{days} days ago"
 
 # 检测DScan类型
 def detect_dscan_type(dscan_text: str) -> str:

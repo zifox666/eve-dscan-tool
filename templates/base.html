@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title }}{% endblock %} - Dscan.icu</title>
     <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-    <img src="/static/favicon.ico" alt="Logo" class="w-6 h-6">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <!-- i18n 脚本 -->
+    <script src="/static/js/translations.js"></script>
+    <script src="/static/js/i18n.js"></script>
     <script>
         // 配置Tailwind主题
         tailwind.config = {
@@ -73,40 +76,74 @@
     </style>
     {% block head %}{% endblock %}
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
     <!-- 导航栏 -->
     <nav class="bg-white dark:bg-gray-800 shadow-md">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                <a href="/" class="flex items-center space-x-2 text-2xl font-bold text-primary-600 dark:text-primary-400">
+                <a href="/"
+                    class="flex items-center space-x-2 text-2xl font-bold text-primary-600 dark:text-primary-400">
                     <img src="/static/favicon.ico" alt="Logo" class="w-6 h-6">
                     <span>Dscan.icu</span>
                 </a>
                 <div class="flex items-center space-x-4">
                     <!-- GitHub按钮 -->
-                    <a href="https://github.com/zifox666/eve-dscan-tool" target="_blank" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="GitHub仓库">
+                    <a href="https://github.com/zifox666/eve-dscan-tool" target="_blank"
+                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="GitHub">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
-                            <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.026 2.747-1.026.546 1.378.202 2.397.1 2.65.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" />
+                            <path fill-rule="evenodd" clip-rule="evenodd"
+                                d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.026 2.747-1.026.546 1.378.202 2.397.1 2.65.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" />
                         </svg>
                     </a>
 
                     <!-- 截图按钮 -->
-                    <button id="screenshotBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="截图整页">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <button id="screenshotBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                        title="截图整页">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </button>
 
                     <!-- 暗黑模式切换按钮 -->
                     <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden dark:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden dark:block" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 block dark:hidden" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                         </svg>
                     </button>
+
+                    <!-- 语言切换按钮 -->
+                    <div class="relative">
+                        <button id="languageToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                            title="切换语言">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                            </svg>
+                            <span class="ml-1 text-xs font-bold" id="currentLangDisplay"></span>
+                        </button>
+                        <div id="languageDropdown"
+                            class="hidden absolute right-0 mt-2 py-2 w-24 bg-white dark:bg-gray-800 rounded-md shadow-xl z-20">
+                            <button
+                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left language-option"
+                                data-lang="zh">中文</button>
+                            <button
+                                class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 w-full text-left language-option"
+                                data-lang="en">English</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -122,7 +159,8 @@
         <div class="container mx-auto px-4">
             <div class="text-center text-gray-600 dark:text-gray-400">
                 <p>&copy; newdoublex</p>
-                <p class="mt-2 text-sm">EVE Online and all related logos and images are trademarks or registered trademarks of CCP hf.</p>
+                <p class="mt-2 text-sm">EVE Online and all related logos and images are trademarks or registered
+                    trademarks of CCP hf.</p>
             </div>
         </div>
     </footer>
@@ -137,26 +175,26 @@
         // 暗黑模式切换
         const darkModeToggle = document.getElementById('darkModeToggle');
         const html = document.documentElement;
-        
+
         // 检查本地存储中的主题偏好
-        if (localStorage.getItem('darkMode') === 'true' || 
+        if (localStorage.getItem('darkMode') === 'true' ||
             (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
             html.classList.add('dark');
         }
-        
+
         // 切换暗黑模式
-        darkModeToggle.addEventListener('click', function() {
+        darkModeToggle.addEventListener('click', function () {
             html.classList.toggle('dark');
             localStorage.setItem('darkMode', html.classList.contains('dark'));
         });
 
         // 表单提交加载动画
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const forms = document.querySelectorAll('form');
             const loadingSpinner = document.getElementById('loadingSpinner');
 
             forms.forEach(form => {
-                form.addEventListener('submit', function() {
+                form.addEventListener('submit', function () {
                     // 移除之前可能存在的样式
                     loadingSpinner.classList.remove('hidden');
                     loadingSpinner.classList.add('active');
@@ -164,35 +202,98 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', function() {
-    const screenshotBtn = document.getElementById('screenshotBtn');
-    const loadingSpinner = document.getElementById('loadingSpinner');
+        document.addEventListener('DOMContentLoaded', function () {
+            const screenshotBtn = document.getElementById('screenshotBtn');
+            const loadingSpinner = document.getElementById('loadingSpinner');
 
-    if (screenshotBtn) {
-        screenshotBtn.addEventListener('click', function() {
+            if (screenshotBtn) {
+                screenshotBtn.addEventListener('click', function () {
 
-            // 延迟执行截图，给加载动画时间显示
-            setTimeout(function() {
-                html2canvas(document.body, {
-                    allowTaint: true,
-                    useCORS: true,
-                    scrollX: 0,
-                    scrollY: 0,
-                    windowWidth: document.documentElement.offsetWidth,
-                    windowHeight: document.documentElement.offsetHeight,
-                    scale: 1
-                }).then(function(canvas) {
-                    // 创建下载链接
-                    const link = document.createElement('a');
-                    link.download = 'eve-dscan-' + new Date().toISOString().slice(0, 10) + '.png';
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    // 延迟执行截图，给加载动画时间显示
+                    setTimeout(function () {
+                        html2canvas(document.body, {
+                            allowTaint: true,
+                            useCORS: true,
+                            scrollX: 0,
+                            scrollY: 0,
+                            windowWidth: document.documentElement.offsetWidth,
+                            windowHeight: document.documentElement.offsetHeight,
+                            scale: 1
+                        }).then(function (canvas) {
+                            // 创建下载链接
+                            const link = document.createElement('a');
+                            link.download = 'eve-dscan-' + new Date().toISOString().slice(0, 10) + '.png';
+                            link.href = canvas.toDataURL('image/png');
+                            link.click();
+                        });
+                    }, 500);
                 });
-            }, 500);
+            }
         });
-    }
-});
+
+        // 语言切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const languageToggle = document.getElementById('languageToggle');
+            const languageDropdown = document.getElementById('languageDropdown');
+            const languageButtons = document.querySelectorAll('#languageDropdown [data-lang]');
+            const currentLangDisplay = document.getElementById('currentLangDisplay');
+
+            // 初始化页面翻译
+            updatePageTranslations();
+
+            // 显示当前语言
+            updateCurrentLanguageDisplay();
+
+            // 点击切换按钮显示/隐藏下拉菜单
+            languageToggle.addEventListener('click', function() {
+                languageDropdown.classList.toggle('hidden');
+            });
+
+            // 点击文档其他地方关闭下拉菜单
+            document.addEventListener('click', function(event) {
+                if (!languageToggle.contains(event.target) && !languageDropdown.contains(event.target)) {
+                    languageDropdown.classList.add('hidden');
+                }
+            });
+
+            // 语言选择
+            languageButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const lang = this.getAttribute('data-lang');
+                    document.cookie = `lang=${lang}; max-age=${60*60*24*30}; path=/`;
+                    switchLanguage(lang);
+                    languageDropdown.classList.add('hidden');
+                    updateCurrentLanguageDisplay();
+
+                    // 可以添加事件跟踪或其他功能
+                    console.log('语言已切到:', lang);
+                });
+
+                // 根据当前语言高亮选项
+                const buttonLang = button.getAttribute('data-lang');
+                if (isCurrentLanguage(buttonLang)) {
+                    button.classList.add('bg-primary-100', 'dark:bg-primary-900/30');
+                }
+            });
+
+            // 更新当前语言显示
+            function updateCurrentLanguageDisplay() {
+                const currentLang = getCurrentLanguage();
+                currentLangDisplay.textContent = currentLang.toUpperCase();
+
+                // 更新语言选项的高亮状态
+                languageButtons.forEach(button => {
+                    const buttonLang = button.getAttribute('data-lang');
+                    if (buttonLang === currentLang) {
+                        button.classList.add('bg-primary-100', 'dark:bg-primary-900/30');
+                    } else {
+                        button.classList.remove('bg-primary-100', 'dark:bg-primary-900/30');
+                    }
+                });
+            }
+        });
     </script>
     {% block scripts %}{% endblock %}
 </body>
+
 </html>

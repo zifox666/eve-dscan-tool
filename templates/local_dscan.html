@@ -53,40 +53,40 @@
 <div class="max-w-6xl mx-auto">
     <div class="card mb-6">
         <div class="flex justify-between items-center mb-4">
-            <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400">本地频道分析结果</h1>
+            <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400" data-i18n="local_dscan_title">本地频道分析结果</h1>
             <div class="flex space-x-2">
                 <button id="copyLinkBtn" class="btn-secondary text-sm py-1 px-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                     </svg>
-                    复制链接
+                    <span data-i18n="copy_link"></span>
                 </button>
                 <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
                     </svg>
-                    返回首页
+                    <span data-i18n="back_to_home"></span>
                 </a>
             </div>
         </div>
         
         <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            <span>创建于 {{ dscan.created_at }} ({{ dscan.time_ago }})</span>
+            <span><span data-i18n="created_at"></span> {{ dscan.created_at }} ({{ dscan.time_ago }})</span>
         </div>
         
         <!-- 统计信息 -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="stat-card">
                 <div class="stat-value">{{ dscan.processed_data.stats.character_count }}</div>
-                <div class="stat-label">总角色数</div>
+                <div class="stat-label" data-i18n="total_characters">总角色数</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">{{ dscan.processed_data.stats.corporation_count }}</div>
-                <div class="stat-label">公司数量</div>
+                <div class="stat-label" data-i18n="total_corps">公司数量</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">{{ dscan.processed_data.stats.alliance_count }}</div>
-                <div class="stat-label">联盟数量</div>
+                <div class="stat-label" data-i18n="total_alliances">联盟数量</div>
             </div>
             <div class="stat-card">
                 {% set without_alliance = 0 %}
@@ -96,7 +96,7 @@
                     {% endif %}
                 {% endfor %}
                 <div class="stat-value">{{ without_alliance }}</div>
-                <div class="stat-label">无联盟角色</div>
+                <div class="stat-label" data-i18n="no_alliances_characters">无联盟角色</div>
             </div>
         </div>
         
@@ -104,7 +104,7 @@
         <div class="grid grid-cols-3 gap-4">
             <!-- 联盟列 -->
             <div class="entity-column">
-                <div class="entity-header">联盟</div>
+                <div class="entity-header" data-i18n="alliance">联盟</div>
                 <div class="entity-list" id="alliance-list">
                     <!-- 有联盟的角色 -->
                     {% set alliance_counts = {} %}
@@ -155,7 +155,7 @@
 
             <!-- 公司列 -->
             <div class="entity-column">
-                <div class="entity-header">公司</div>
+                <div class="entity-header" data-i18n="corporation">公司</div>
                 <div class="entity-list" id="corporation-list">
                     {% set corp_counts = {} %}
                     {% for char_id, character in dscan.processed_data.characters.items() %}
@@ -190,7 +190,7 @@
             
             <!-- 角色列 -->
             <div class="entity-column">
-                <div class="entity-header">角色</div>
+                <div class="entity-header" data-i18n="character">角色</div>
                 <div class="entity-list" id="character-list">
                     {% for char_id, character in dscan.processed_data.characters.items() %}
                         {% set corp = dscan.processed_data.corporations[character.corporation_id|string] %}

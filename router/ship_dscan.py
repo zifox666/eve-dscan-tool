@@ -11,6 +11,7 @@ from typing import List, Dict, Any, Optional, Tuple
 from config import settings
 from db.database import get_db
 from db.models.dscan import ShipDScan
+from db.sde import eve_db
 from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, format_time_ago
 from utils.sqlite_helper import SQLiteHelper
@@ -99,15 +100,21 @@ def get_ship_info_from_db(ship_items: List[Dict[str, Any]]) -> List[Dict[str, An
     return ship_items
 
 # 组织舰船扫描数据
-def organize_ship_dscan_data(ship_items: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """组织舰船扫描数据，按类型和分组分类"""
+def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "zh") -> Dict[str, Any]:
+    """组织舰船扫描数据，按类型和分组分类，支持多语言"""
+    # 旗舰类型组ID列表
+    capital_group_ids = [30, 485, 547, 659, 883, 1538, 4594]
+
+    # 建筑类型分类ID列表
+    structure_category_ids = [41, 46, 65, 66]
+
     # 初始化结果数据结构
     result = {
-        "ship_types": {},  # 普通舰船类型统计 {group_name: {type_name: count}}
-        "capital_types": {},  # 旗舰类型统计 {group_name: {type_name: count}}
-        "structure_types": {},  # 建筑类型统计 {group_name: {type_name: count}}
-        "misc_types": {},  # 其他类型统计 {group_name: {type_name: count}}
-        "stats": {  # 统计信息
+        "ship_types": {},
+        "capital_types": {},
+        "structure_types": {},
+        "misc_types": {},
+        "stats": {
             "total_count": len(ship_items),
             "ship_count": 0,
             "capital_count": 0,
@@ -116,75 +123,68 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]]) -> Dict[str, Any]
         }
     }
 
-    # 旗舰类型列表
-    capital_categories = ["无畏舰", "战力辅助舰", "旗舰级工业舰", "泰坦", "超级航母", "航空母舰", "枪骑兵无畏舰"]
-
-    # 建筑类型列表
-    structure_categories = ["空间站", "轨道类", "可放置物品", "可部署物品", "主权设施", "建筑"]
-
     # 分类舰船数据
     for item in ship_items:
-        category = item.get('category_name', '').strip()
-        group = item.get('group_name', '未知分组').strip()
-        type_name = item.get('type_name', 'Unknown')
+        type_id = item.get('type_id')
+        if not type_id:
+            continue
 
-        # 判断类型
-        if category == "舰船":
-            # 判断是否为旗舰
-            if group in capital_categories:
-                # 初始化该group如果不存在
-                if group not in result["capital_types"]:
-                    result["capital_types"][group] = {}
+        # 从SDE数据库获取对应语言的信息
+        type_info = eve_db.get_type_info(type_id, language)
+        if not type_info:
+            continue
 
-                # 更新该group下的type_name计数
-                if type_name in result["capital_types"][group]:
-                    result["capital_types"][group][type_name] += 1
+        group_id = type_info.get('groupID')
+        category_id = type_info.get('categoryID')
+        group_name = type_info.get('group_name', '未知分组')
+        type_name = type_info.get('name', 'Unknown')
+
+        # 判断分类
+        if category_id == 6:  # 舰船分类ID
+            if group_id in capital_group_ids:
+                # 旗舰处理
+                if group_name not in result["capital_types"]:
+                    result["capital_types"][group_name] = {}
+
+                if type_name in result["capital_types"][group_name]:
+                    result["capital_types"][group_name][type_name] += 1
                 else:
-                    result["capital_types"][group][type_name] = 1
+                    result["capital_types"][group_name][type_name] = 1
 
                 result["stats"]["capital_count"] += 1
             else:
-                # 初始化该group如果不存在
-                if group not in result["ship_types"]:
-                    result["ship_types"][group] = {}
+                # 普通舰船处理
+                if group_name not in result["ship_types"]:
+                    result["ship_types"][group_name] = {}
 
-                # 更新该group下的type_name计数
-                if type_name in result["ship_types"][group]:
-                    result["ship_types"][group][type_name] += 1
+                if type_name in result["ship_types"][group_name]:
+                    result["ship_types"][group_name][type_name] += 1
                 else:
-                    result["ship_types"][group][type_name] = 1
+                    result["ship_types"][group_name][type_name] = 1
 
                 result["stats"]["ship_count"] += 1
-        elif category in structure_categories or "建筑" in group:
-            # 初始化该group如果不存在
-            if group not in result["structure_types"]:
-                result["structure_types"][group] = {}
+        elif category_id in structure_category_ids:
+            # 建筑处理
+            if group_name not in result["structure_types"]:
+                result["structure_types"][group_name] = {}
 
-            # 更新该group下的type_name计数
-            if type_name in result["structure_types"][group]:
-                result["structure_types"][group][type_name] += 1
+            if type_name in result["structure_types"][group_name]:
+                result["structure_types"][group_name][type_name] += 1
             else:
-                result["structure_types"][group][type_name] = 1
+                result["structure_types"][group_name][type_name] = 1
 
             result["stats"]["structure_count"] += 1
         else:
-            # 初始化该group如果不存在
-            if group not in result["misc_types"]:
-                result["misc_types"][group] = {}
+            # 其他物品处理
+            if group_name not in result["misc_types"]:
+                result["misc_types"][group_name] = {}
 
-            # 更新该group下的type_name计数
-            if type_name in result["misc_types"][group]:
-                result["misc_types"][group][type_name] += 1
+            if type_name in result["misc_types"][group_name]:
+                result["misc_types"][group_name][type_name] += 1
             else:
-                result["misc_types"][group][type_name] = 1
+                result["misc_types"][group_name][type_name] = 1
 
             result["stats"]["misc_count"] += 1
-
-    # 计算每个分组的总数量
-    group_totals = {}
-    for category in ["ship_types", "capital_types", "structure_types", "misc_types"]:
-        for group, types in result[category].items():
-            group_totals[(category, group)] = sum(types.values())
 
     # 将嵌套字典转换为便于前端使用的格式，并对组进行排序
     for category in ["ship_types", "capital_types", "structure_types", "misc_types"]:
@@ -212,11 +212,10 @@ async def process_ship_dscan(
         filter_distance: bool = Form(False),
         db: AsyncSession = Depends(get_db)
 ):
-    """处理Ship DScan数据"""
+    """处理Ship DScan数据，同时生成中英文版本"""
     # 解析DScan数据
     ship_items, system_info = parse_ship_dscan(data)
 
-    # 如果没有解析到有效数据，返回错误信息
     if not ship_items:
         return templates.TemplateResponse(
             "404.html",
@@ -226,49 +225,49 @@ async def process_ship_dscan(
     if filter_distance:
         ship_items = [item for item in ship_items if item.get('distance') and item.get('distance') != '-']
 
-    # 从数据库获取舰船信息
-    ship_items = get_ship_info_from_db(ship_items)
-
-    # 组织数据
-    result = organize_ship_dscan_data(ship_items)
-
-    result["filter_distance"] = filter_distance
-
-    # 添加星系信息
-    result["system_info"] = system_info
-
     # 生成短链接ID
     short_id = generate_short_id(settings.SHORT_LINK_LENGTH)
 
     # 获取客户端IP
     client_ip = request.client.host
 
-    # 保存到数据库
+    # 分别生成中英文数据
+    result_zh = organize_ship_dscan_data(ship_items, "zh")
+    result_en = organize_ship_dscan_data(ship_items, "en")
+
+    # 添加过滤和星系信息
+    for result in [result_zh, result_en]:
+        result["filter_distance"] = filter_distance
+        result["system_info"] = system_info
+
+    # 保存到数据库（存储两种语言的数据）
+    processed_data = {
+        "zh": result_zh,
+        "en": result_en
+    }
+
     new_dscan = ShipDScan(
         short_id=short_id,
         raw_data=data,
-        processed_data=result,
+        processed_data=processed_data,
         client_ip=client_ip
     )
     db.add(new_dscan)
     await db.commit()
     await db.refresh(new_dscan)
 
-    # 缓存处理后的数据到Redis
-    cache_key = f"ship_dscan:{short_id}"
-    dscan_data = {
-        "id": new_dscan.id,
-        "short_id": new_dscan.short_id,
-        "processed_data": new_dscan.processed_data,
-        "view_count": new_dscan.view_count,
-        "created_at": new_dscan.created_at.isoformat(),
-        "time_ago": format_time_ago(new_dscan.created_at)
-    }
-
-    dscan_cache.set(
-        cache_key,
-        dscan_data
-    )
+    # 缓存处理后的数据到Redis（分别缓存中英文数据）
+    for lang in ["zh", "en"]:
+        cache_key = f"ship_dscan:{lang}:{short_id}"
+        dscan_data = {
+            "id": new_dscan.id,
+            "short_id": new_dscan.short_id,
+            "processed_data": processed_data[lang],
+            "view_count": new_dscan.view_count,
+            "created_at": new_dscan.created_at.isoformat(),
+            "time_ago": format_time_ago(new_dscan.created_at)
+        }
+        dscan_cache.set(cache_key, dscan_data)
 
     # 重定向到查看页面
     return RedirectResponse(url=f"/v/{short_id}", status_code=303)
@@ -280,9 +279,14 @@ async def view_ship_dscan(
         short_id: str,
         db: AsyncSession = Depends(get_db)
 ):
-    """查看保存的Ship DScan数据"""
-    # 从缓存获取数据
-    cache_key = f"ship_dscan:{short_id}"
+    """查看保存的Ship DScan数据，支持语言切换"""
+    # 获取用户语言偏好，默认为中文
+    lang = request.cookies.get("lang", "zh")
+    if lang not in ["zh", "en"]:
+        lang = "zh"  # 默认为中文
+
+    # 缓存键
+    cache_key = f"ship_dscan:{lang}:{short_id}"
     cached_data = dscan_cache.get(cache_key)
 
     # 从数据库查询记录
@@ -304,17 +308,21 @@ async def view_ship_dscan(
         dscan_data = cached_data
         dscan_data["view_count"] = dscan.view_count
     else:
+        # 缓存未命中，从数据库获取并构建相应语言的数据
+        processed_data = dscan.processed_data.get(lang, dscan.processed_data.get("zh", {}))
+
         dscan_data = {
             "id": dscan.id,
             "short_id": dscan.short_id,
-            "processed_data": dscan.processed_data,
+            "processed_data": processed_data,
             "view_count": dscan.view_count,
             "created_at": dscan.created_at.isoformat(),
-            "time_ago": format_time_ago(dscan.created_at)
+            "time_ago": format_time_ago(dscan.created_at),
+            "lang": lang
         }
 
-    # 更新缓存
-    dscan_cache.set(cache_key, dscan_data)
+        # 更新缓存
+        dscan_cache.set(cache_key, dscan_data)
 
     return templates.TemplateResponse(
         "ship_dscan.html",
@@ -322,6 +330,7 @@ async def view_ship_dscan(
             "request": request,
             "title": "舰船扫描分析",
             "dscan": dscan_data,
-            "base_url": f"{request.base_url}v/{short_id}"
+            "base_url": f"{request.base_url}v/{short_id}",
+            "current_lang": lang
         }
     )

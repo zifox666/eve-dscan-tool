@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.pool import NullPool
 
 from config import settings
+from db.sde import EVESqliteDB
 
 # 创建异步数据库引擎
 async_engine = create_async_engine(

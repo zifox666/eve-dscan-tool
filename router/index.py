@@ -21,7 +21,12 @@ async def index(request: Request):
 
 
 @router.post("/submit")
-async def submit_dscan(request: Request, dscan_data: str = Form(...), filter_distance: bool = Form(False)):
+async def submit_dscan(
+        request: Request,
+        dscan_data: str = Form(...),
+        filter_distance: bool = Form(False),
+        language: str = Form(None)
+):
     """提交DScan数据，根据类型重定向到相应的处理页面"""
     # 检测DScan类型
     dscan_type = detect_dscan_type(dscan_data)
@@ -30,6 +35,9 @@ async def submit_dscan(request: Request, dscan_data: str = Form(...), filter_dis
     form_data = {"data": dscan_data}
     if filter_distance:
         form_data["filter_distance"] = "true"
+
+    if language:
+        form_data["language"] = language
 
     # 根据类型重定向到POST处理路由
     if dscan_type == "local":

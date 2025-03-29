@@ -5,21 +5,21 @@
 {% block content %}
 <div class="max-w-4xl mx-auto">
     <div class="card">
-        <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400 mb-4">EVE Online DScan 分析工具</h1>
+        <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400 mb-4" data-i18n="title">EVE Online DScan 分析工具</h1>
         
-        <p class="mb-6 text-gray-700 dark:text-gray-300">
+        <p class="mb-6 text-gray-700 dark:text-gray-300" data-i18n="tool_desc">
             这是一个简单的EVE Online DScan分析工具，可以帮助您分析本地频道成员和舰船扫描结果。
             只需将DScan数据粘贴到下面的文本框中，然后点击提交按钮即可。
         </p>
         
         <form action="/submit" method="post" class="space-y-4">
             <div>
-                <label for="dscan_data" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DScan 数据</label>
+                <label for="dscan_data" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" data-i18n="input_title">DScan 数据</label>
                 <textarea 
                     id="dscan_data" 
                     name="dscan_data" 
                     rows="8"
-                    placeholder="在此粘贴您的DScan数据..."
+                    data-i18n-placeholder="paste_dscan_data"
                     class="input-field"
                     required
                 ></textarea>
@@ -28,14 +28,14 @@
             <div class="mt-4">
                 <label class="inline-flex items-center">
                     <input type="checkbox" id="filter_distance" name="filter_distance" class="form-checkbox h-5 w-5 text-primary-600">
-                    <span class="ml-2 text-gray-700 dark:text-gray-300">仅统计有距离信息的扫描结果</span>
+                    <span class="ml-2 text-gray-700 dark:text-gray-300" data-i18n="only_have_distance">仅统计有距离信息的扫描结果</span>
                 </label>
             </div>
 
             <!-- 在表单中添加折叠面板 -->
             <div class="mt-4">
                 <button type="button" id="toggleReconButton" class="flex items-center justify-between w-full px-4 py-2 text-sm font-medium text-left text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus-visible:ring focus-visible:ring-primary-500 focus-visible:ring-opacity-75">
-                    <span>添加侦查舰</span>
+                    <span data-i18n="add_ship">添加侦查舰</span>
                     <svg id="reconArrow" class="w-5 h-5 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
@@ -46,9 +46,9 @@
                             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                 <thead>
                                     <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">名称</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">数量</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">操作</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-i18n="name">名称</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-i18n="num">数量</th>
+                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-i18n="action">操作</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -112,16 +112,17 @@
             </div>
             
             <div class="flex justify-end">
-                <button type="submit" id="submitBtn" class="btn-primary">提交</button>
+                <input type="hidden" name="language" id="language_preference" value="">
+                <button type="submit" id="submitBtn" class="btn-primary" data-i18n="submit">提交</button>
             </div>
         </form>
         
         <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">使用说明</h2>
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2" data-i18n="instructions">使用说明</h2>
             <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                <li>本地频道成员列表：复制本地频道成员列表并粘贴</li>
-                <li>舰船扫描：使用DScan工具扫描后复制结果并粘贴</li>
-                <li>分析结果可以通过生成的链接分享给他人</li>
+                <li data-i18n="li1">本地频道成员列表：复制本地频道成员列表并粘贴</li>
+                <li data-i18n="li2">舰船扫描：使用DScan工具扫描后复制结果并粘贴</li>
+                <li data-i18n="li3">分析结果可以通过生成的链接分享给他人</li>
             </ul>
         </div>
     </div>
@@ -138,6 +139,23 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
     });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    // 获取表单元素
+    const form = document.querySelector('form');
+    const languageField = document.getElementById('language_preference');
+
+    if (form && languageField) {
+        // 在表单提交前设置语言偏好
+        form.addEventListener('submit', function() {
+            // 从i18n.js中获取当前语言
+            languageField.value = getCurrentLanguage();
+        });
+
+        // 初始设置当前语言
+        languageField.value = getCurrentLanguage();
+    }
 });
 
 // 侦查舰折叠面板控制

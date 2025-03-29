@@ -5,7 +5,7 @@
 {% block content %}
 <div class="flex justify-center items-center h-screen">
     <div class="text-center">
-        <h1 class="text-xl mb-4">正在处理数据...</h1>
+        <h1 class="text-xl mb-4" data-i18n="progress">正在处理数据...</h1>
         <div class="spinner"></div>
         <form id="redirectForm" method="post" action="{{ action }}">
             {% for key, value in form_data.items() %}

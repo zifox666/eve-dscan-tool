@@ -27,6 +27,7 @@ async def process_local_dscan(
         request: Request,
         data: str = Form(...),
         db: AsyncSession = Depends(get_db),
+        language: Optional[str] = Form(None)
 ):
     """处理Local DScan数据"""
     # 解析DScan数据
