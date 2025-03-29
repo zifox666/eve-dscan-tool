@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ title }}{% endblock %} - Dscan.icu</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', path='/favicon.ico') }}">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
@@ -76,7 +77,10 @@
     <nav class="bg-white dark:bg-gray-800 shadow-md">
         <div class="container mx-auto px-4 py-3">
             <div class="flex justify-between items-center">
-                <a href="/" class="text-2xl font-bold text-primary-600 dark:text-primary-400">Dscan.icu</a>
+                <a href="/" class="flex items-center space-x-2 text-2xl font-bold text-primary-600 dark:text-primary-400">
+                    <img src="{{ url_for('static', path='favicon.ico') }}" alt="Logo" class="w-6 h-6">
+                    <span>Dscan.icu</span>
+                </a>
                 <div class="flex items-center space-x-4">
                     <!-- GitHub按钮 -->
                     <a href="https://github.com/zifox666/eve-dscan-tool" target="_blank" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="GitHub仓库">
