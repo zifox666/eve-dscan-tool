@@ -231,169 +231,277 @@
         }
     });
     
-    // 悬停交互功能
-    document.addEventListener('DOMContentLoaded', function() {
-        const allianceItems = document.querySelectorAll('#alliance-list .entity-item');
-        const corporationItems = document.querySelectorAll('#corporation-list .entity-item');
-        const characterItems = document.querySelectorAll('#character-list .entity-item');
-        
-        // 构建关系映射表
-        const relationships = {
-            alliances: {},  // alliance_id -> {corps: [], chars: []}
-            corporations: {},  // corp_id -> {alliance: null, chars: []}
-            characters: {}  // char_id -> {alliance: null, corp: null}
+document.addEventListener('DOMContentLoaded', function() {
+    const allianceItems = document.querySelectorAll('#alliance-list .entity-item');
+    const corporationItems = document.querySelectorAll('#corporation-list .entity-item');
+    const characterItems = document.querySelectorAll('#character-list .entity-item');
+    let activeFilter = null; // 记录当前选中的筛选元素
+
+    // 构建关系映射表
+    const relationships = {
+        alliances: {},  // alliance_id -> {corps: [], chars: []}
+        corporations: {},  // corp_id -> {alliance: null, chars: []}
+        characters: {}  // char_id -> {alliance: null, corp: null}
+    };
+
+    // 构建角色关系
+    characterItems.forEach(charItem => {
+        const charId = charItem.getAttribute('data-char-id');
+        const corpId = charItem.getAttribute('data-corp-id');
+        const allianceId = charItem.getAttribute('data-alliance-id');
+
+        relationships.characters[charId] = {
+            alliance: allianceId,
+            corp: corpId
         };
-        
-        // 构建角色关系
-        characterItems.forEach(charItem => {
-            const charId = charItem.getAttribute('data-char-id');
-            const corpId = charItem.getAttribute('data-corp-id');
-            const allianceId = charItem.getAttribute('data-alliance-id');
-            
-            relationships.characters[charId] = {
+
+        // 更新军团关系
+        if (!relationships.corporations[corpId]) {
+            relationships.corporations[corpId] = {
                 alliance: allianceId,
-                corp: corpId
+                chars: []
             };
-            
-            // 更新军团关系
-            if (!relationships.corporations[corpId]) {
-                relationships.corporations[corpId] = {
-                    alliance: allianceId,
+        }
+        relationships.corporations[corpId].chars.push(charId);
+
+        // 更新联盟关系
+        if (allianceId !== 'none') {
+            if (!relationships.alliances[allianceId]) {
+                relationships.alliances[allianceId] = {
+                    corps: [],
                     chars: []
                 };
             }
-            relationships.corporations[corpId].chars.push(charId);
-            
-            // 更新联盟关系
-            if (allianceId !== 'none') {
-                if (!relationships.alliances[allianceId]) {
-                    relationships.alliances[allianceId] = {
-                        corps: [],
-                        chars: []
-                    };
-                }
-                if (!relationships.alliances[allianceId].corps.includes(corpId)) {
-                    relationships.alliances[allianceId].corps.push(corpId);
-                }
-                relationships.alliances[allianceId].chars.push(charId);
+            if (!relationships.alliances[allianceId].corps.includes(corpId)) {
+                relationships.alliances[allianceId].corps.push(corpId);
+            }
+            relationships.alliances[allianceId].chars.push(charId);
+        }
+    });
+
+    // 清除所有高亮并显示所有项目
+    function clearAllHighlights() {
+        if (activeFilter) return; // 如果有激活的筛选，不清除高亮
+
+        document.querySelectorAll('.entity-item').forEach(item => {
+            item.classList.remove('highlighted');
+            item.style.display = ''; // 恢复显示所有项目
+        });
+    }
+
+    // 重置所有筛选
+    function resetAllFilters() {
+        document.querySelectorAll('.entity-item').forEach(item => {
+            item.classList.remove('highlighted');
+            item.style.display = ''; // 恢复显示所有项目
+        });
+        activeFilter = null;
+    }
+
+    // 筛选联盟
+    function filterByAlliance(allianceItem) {
+        const allianceId = allianceItem.getAttribute('data-alliance-id');
+        const allianceRelation = relationships.alliances[allianceId] || { corps: [], chars: [] };
+
+        // 显示并高亮相关军团
+        corporationItems.forEach(corpItem => {
+            const corpId = corpItem.getAttribute('data-corp-id');
+            if (allianceRelation.corps.includes(corpId) ||
+                (allianceId === 'none' && corpItem.getAttribute('data-alliance-id') === 'none')) {
+                corpItem.style.display = '';
+            } else {
+                corpItem.style.display = 'none';
             }
         });
-        
-        // 清除所有高亮并显示所有项目
-        function clearAllHighlights() {
-            document.querySelectorAll('.entity-item').forEach(item => {
-                item.classList.remove('highlighted');
-                item.style.display = ''; // 恢复显示所有项目
-            });
-        }
-        
-        // 联盟悬停事件
-        allianceItems.forEach(allianceItem => {
-            allianceItem.addEventListener('mouseenter', function() {
-                clearAllHighlights();
-                
-                // 高亮当前联盟
-                this.classList.add('highlighted');
-                
-                const allianceId = this.getAttribute('data-alliance-id');
-                const allianceRelation = relationships.alliances[allianceId] || { corps: [], chars: [] };
-                
-                // 显示并高亮相关军团
-                corporationItems.forEach(corpItem => {
-                    const corpId = corpItem.getAttribute('data-corp-id');
-                    if (allianceRelation.corps.includes(corpId)) {
-                        corpItem.classList.add('highlighted');
-                        corpItem.style.display = '';
-                    } else {
-                        corpItem.style.display = 'none';
-                    }
-                });
-                
-                // 显示并高亮相关角色
-                characterItems.forEach(charItem => {
-                    const charId = charItem.getAttribute('data-char-id');
-                    if (allianceRelation.chars.includes(charId)) {
-                        charItem.classList.add('highlighted');
-                        charItem.style.display = '';
-                    } else {
-                        charItem.style.display = 'none';
-                    }
-                });
-            });
-            
-            allianceItem.addEventListener('mouseleave', clearAllHighlights);
-        });
-        
-        // 军团悬停事件
-        corporationItems.forEach(corpItem => {
-            corpItem.addEventListener('mouseenter', function() {
-                clearAllHighlights();
-                
-                // 高亮当前军团
-                this.classList.add('highlighted');
-                
-                const corpId = this.getAttribute('data-corp-id');
-                const corpRelation = relationships.corporations[corpId] || { alliance: 'none', chars: [] };
-                
-                // 显示并高亮相关联盟
-                allianceItems.forEach(allianceItem => {
-                    if (allianceItem.getAttribute('data-alliance-id') === corpRelation.alliance) {
-                        allianceItem.classList.add('highlighted');
-                        allianceItem.style.display = '';
-                    } else {
-                        allianceItem.style.display = '';
-                    }
-                });
-                
-                // 显示并高亮相关角色
-                characterItems.forEach(charItem => {
-                    const charId = charItem.getAttribute('data-char-id');
-                    if (corpRelation.chars.includes(charId)) {
-                        charItem.classList.add('highlighted');
-                        charItem.style.display = '';
-                    } else {
-                        charItem.style.display = 'none';
-                    }
-                });
-            });
-            
-            corpItem.addEventListener('mouseleave', clearAllHighlights);
-        });
-        
-        // 角色悬停事件
+
+        // 显示并高亮相关角色
         characterItems.forEach(charItem => {
-            charItem.addEventListener('mouseenter', function() {
-                clearAllHighlights();
-                
-                // 高亮当前角色
-                this.classList.add('highlighted');
-                
-                const charId = this.getAttribute('data-char-id');
-                const charRelation = relationships.characters[charId] || { alliance: 'none', corp: null };
-                
-                // 显示并高亮相关联盟
-                allianceItems.forEach(allianceItem => {
-                    if (allianceItem.getAttribute('data-alliance-id') === charRelation.alliance) {
-                        allianceItem.classList.add('highlighted');
-                        allianceItem.style.display = '';
-                    } else {
-                        allianceItem.style.display = 'none';
-                    }
-                });
-                
-                // 显示并高亮相关军团
-                corporationItems.forEach(corpItem => {
-                    if (corpItem.getAttribute('data-corp-id') === charRelation.corp) {
-                        corpItem.classList.add('highlighted');
-                        corpItem.style.display = '';
-                    } else {
-                        corpItem.style.display = '';
-                    }
-                });
-            });
-            
-            charItem.addEventListener('mouseleave', clearAllHighlights);
+            const charId = charItem.getAttribute('data-char-id');
+            if (allianceRelation.chars.includes(charId) ||
+                (allianceId === 'none' && charItem.getAttribute('data-alliance-id') === 'none')) {
+                charItem.style.display = '';
+            } else {
+                charItem.style.display = 'none';
+            }
         });
+    }
+
+    // 筛选军团
+    function filterByCorporation(corpItem) {
+        const corpId = corpItem.getAttribute('data-corp-id');
+        const corpRelation = relationships.corporations[corpId] || { alliance: 'none', chars: [] };
+
+        // 显示并高亮相关联盟
+        allianceItems.forEach(allianceItem => {
+            if (allianceItem.getAttribute('data-alliance-id') === corpRelation.alliance) {
+                allianceItem.classList.add('highlighted');
+            }
+        });
+
+        // 显示并高亮相关角色
+        characterItems.forEach(charItem => {
+            const charId = charItem.getAttribute('data-char-id');
+            if (corpRelation.chars.includes(charId)) {
+                charItem.style.display = '';
+            } else {
+                charItem.style.display = 'none';
+            }
+        });
+    }
+
+    // 筛选角色
+    function filterByCharacter(charItem) {
+        const charId = charItem.getAttribute('data-char-id');
+        const charRelation = relationships.characters[charId] || { alliance: 'none', corp: null };
+
+        // 显示并高亮相关联盟
+        allianceItems.forEach(allianceItem => {
+            if (allianceItem.getAttribute('data-alliance-id') === charRelation.alliance) {
+                allianceItem.classList.add('highlighted');
+            }
+        });
+
+        // 显示并高亮相关军团
+        corporationItems.forEach(corpItem => {
+            if (corpItem.getAttribute('data-corp-id') === charRelation.corp) {
+                corpItem.classList.add('highlighted');
+            }
+        });
+    }
+
+    // 为联盟添加悬停和点击事件
+    allianceItems.forEach(allianceItem => {
+        // 点击事件
+        allianceItem.addEventListener('click', function() {
+            // 如果已经选中当前项，则取消筛选
+            if (activeFilter === this) {
+                resetAllFilters();
+                return;
+            }
+
+            resetAllFilters();
+
+            // 高亮当前联盟
+            this.classList.add('highlighted');
+            activeFilter = this;
+
+            filterByAlliance(this);
+        });
+
+        // 悬停事件
+        allianceItem.addEventListener('mouseenter', function() {
+            if (activeFilter) return; // 如果有激活的筛选，不响应悬停
+
+            clearAllHighlights();
+
+            // 高亮当前联盟
+            this.classList.add('highlighted');
+            filterByAlliance(this);
+        });
+
+        allianceItem.addEventListener('mouseleave', clearAllHighlights);
     });
+
+    // 为军团添加悬停和点击事件
+    corporationItems.forEach(corpItem => {
+        // 点击事件
+        corpItem.addEventListener('click', function() {
+            // 如果已经选中当前项，则取消筛选
+            if (activeFilter === this) {
+                resetAllFilters();
+                return;
+            }
+
+            resetAllFilters();
+
+            // 高亮当前军团
+            this.classList.add('highlighted');
+            activeFilter = this;
+
+            filterByCorporation(this);
+        });
+
+        // 悬停事件
+        corpItem.addEventListener('mouseenter', function() {
+            if (activeFilter) return; // 如果有激活的筛选，不响应悬停
+
+            clearAllHighlights();
+
+            // 高亮当前军团
+            this.classList.add('highlighted');
+
+            const corpId = this.getAttribute('data-corp-id');
+            const corpRelation = relationships.corporations[corpId] || { alliance: 'none', chars: [] };
+
+            // 显示并高亮相关联盟
+            allianceItems.forEach(allianceItem => {
+                if (allianceItem.getAttribute('data-alliance-id') === corpRelation.alliance) {
+                    allianceItem.classList.add('highlighted');
+                }
+            });
+
+            // 显示并高亮相关角色
+            characterItems.forEach(charItem => {
+                const charId = charItem.getAttribute('data-char-id');
+                if (corpRelation.chars.includes(charId)) {
+                    charItem.style.display = '';
+                } else {
+                    charItem.style.display = 'none';
+                }
+            });
+        });
+
+        corpItem.addEventListener('mouseleave', clearAllHighlights);
+    });
+
+    // 为角色添加悬停和点击事件
+    characterItems.forEach(charItem => {
+        // 点击事件
+        charItem.addEventListener('click', function() {
+            // 如果已经选中当前项，则取消筛选
+            if (activeFilter === this) {
+                resetAllFilters();
+                return;
+            }
+
+            resetAllFilters();
+
+            // 高亮当前角色
+            this.classList.add('highlighted');
+            activeFilter = this;
+
+            filterByCharacter(this);
+        });
+
+        // 悬停事件
+        charItem.addEventListener('mouseenter', function() {
+            if (activeFilter) return; // 如果有激活的筛选，不响应悬停
+
+            clearAllHighlights();
+
+            // 高亮当前角色
+            this.classList.add('highlighted');
+
+            const charId = this.getAttribute('data-char-id');
+            const charRelation = relationships.characters[charId] || { alliance: 'none', corp: null };
+
+            // 显示并高亮相关联盟
+            allianceItems.forEach(allianceItem => {
+                if (allianceItem.getAttribute('data-alliance-id') === charRelation.alliance) {
+                    allianceItem.classList.add('highlighted');
+                }
+            });
+
+            // 显示并高亮相关军团
+            corporationItems.forEach(corpItem => {
+                if (corpItem.getAttribute('data-corp-id') === charRelation.corp) {
+                    corpItem.classList.add('highlighted');
+                }
+            });
+        });
+
+        charItem.addEventListener('mouseleave', clearAllHighlights);
+    });
+});
 </script>
 {% endblock %}
