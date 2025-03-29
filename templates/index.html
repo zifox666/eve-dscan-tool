@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}首页{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="card">
+        <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400 mb-4">EVE Online DScan 分析工具</h1>
+        
+        <p class="mb-6 text-gray-700 dark:text-gray-300">
+            这是一个简单的EVE Online DScan分析工具，可以帮助您分析本地频道成员和舰船扫描结果。
+            只需将DScan数据粘贴到下面的文本框中，然后点击提交按钮即可。
+        </p>
+        
+        <form action="/submit" method="post" class="space-y-4">
+            <div>
+                <label for="dscan_data" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">DScan 数据</label>
+                <textarea 
+                    id="dscan_data" 
+                    name="dscan_data" 
+                    rows="10" 
+                    placeholder="在此粘贴您的DScan数据..."
+                    class="input-field"
+                    required
+                ></textarea>
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="submit" id="submitBtn" class="btn-primary">提交</button>
+            </div>
+        </form>
+        
+        <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">使用说明</h2>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                <li>本地频道成员列表：复制本地频道成员列表并粘贴</li>
+                <li>舰船扫描：使用DScan工具扫描后复制结果并粘贴</li>
+                <li>分析结果可以通过生成的链接分享给他人</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        loadingSpinner.classList.add('active');
+    });
+});
+</script>
+{% endblock %}

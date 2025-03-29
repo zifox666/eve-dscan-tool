@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}本地频道分析{% endblock %}
+
+{% block head %}
+<style type="text/tailwindcss">
+    .stat-card {
+        @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center justify-center;
+    }
+    .stat-value {
+        @apply text-2xl font-bold text-primary-600 dark:text-primary-400;
+    }
+    .stat-label {
+        @apply text-sm text-gray-600 dark:text-gray-400 mt-1;
+    }
+    .alliance-tag {
+        @apply text-xs font-medium text-gray-500 dark:text-gray-400 ml-1;
+    }
+    .entity-column {
+        @apply bg-white dark:bg-gray-800 rounded-lg overflow-hidden;
+    }
+    .entity-header {
+        @apply bg-primary-600 dark:bg-primary-700 text-white font-bold py-2 px-4 text-center;
+    }
+    .entity-list {
+        @apply max-h-[70vh] overflow-y-auto;
+    }
+    .entity-item {
+        @apply flex items-center p-2 border-b border-gray-200 dark:border-primary-700 cursor-pointer transition-colors duration-200;
+    }
+    .entity-item:hover {
+        @apply bg-primary-100 dark:bg-primary-700;
+    }
+    .entity-item.highlighted {
+        @apply bg-primary-100 dark:bg-primary-700;
+    }
+    .entity-icon {
+        @apply w-8 h-8 rounded-full mr-2 flex-shrink-0;
+    }
+    .entity-name {
+        @apply text-gray-800 dark:text-white flex-grow;
+    }
+    .entity-count {
+        @apply text-gray-600 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-900 rounded-full px-2 py-1 ml-2;
+    }
+    .entity-tag {
+        @apply text-xs text-gray-500 dark:text-gray-400 ml-1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="card mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400">本地频道分析结果</h1>
+            <div class="flex space-x-2">
+                <button id="copyLinkBtn" class="btn-secondary text-sm py-1 px-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    复制链接
+                </button>
+                <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                    返回首页
+                </a>
+            </div>
+        </div>
+        
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <span>创建于 {{ dscan.time_ago }}</span>
+        </div>
+        
+        <!-- 统计信息 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.character_count }}</div>
+                <div class="stat-label">总角色数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.corporation_count }}</div>
+                <div class="stat-label">公司数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.alliance_count }}</div>
+                <div class="stat-label">联盟数量</div>
+            </div>
+            <div class="stat-card">
+                {% set without_alliance = 0 %}
+                {% for char_id, char in dscan.processed_data.characters.items() %}
+                    {% if not char.alliance_id %}
+                        {% set without_alliance = without_alliance + 1 %}
+                    {% endif %}
+                {% endfor %}
+                <div class="stat-value">{{ without_alliance }}</div>
+                <div class="stat-label">无联盟角色</div>
+            </div>
+        </div>
+        
+        <!-- 三列布局：联盟、公司、角色 -->
+        <div class="grid grid-cols-3 gap-4">
+            <!-- 联盟列 -->
+            <div class="entity-column">
+                <div class="entity-header">联盟</div>
+                <div class="entity-list" id="alliance-list">
+                    <!-- 有联盟的角色 -->
+                    {% set alliance_counts = {} %}
+                    {% for char_id, character in dscan.processed_data.characters.items() %}
+                        {% if character.alliance_id %}
+                            {% set alliance_id = character.alliance_id|string %}
+                            {% if alliance_id not in alliance_counts %}
+                                {% set _ = alliance_counts.update({alliance_id: 1}) %}
+                            {% else %}
+                                {% set _ = alliance_counts.update({alliance_id: alliance_counts[alliance_id] + 1}) %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% for alliance_id, count in alliance_counts.items() %}
+                        {% set alliance = dscan.processed_data.alliances[alliance_id] %}
+                        <div class="entity-item" data-alliance-id="{{ alliance.id }}" data-type="alliance">
+                            <img src="https://images.evetech.net/alliances/{{ alliance.id }}/logo?size=32" alt="{{ alliance.name }}" class="entity-icon">
+                            <div class="entity-name">
+                                <span>{{ alliance.name }}</span>
+                            </div>
+                            <div class="entity-count">{{ count }}</div>
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- 无联盟角色统计 -->
+                    {% set without_alliance = 0 %}
+                    {% for char_id, char in dscan.processed_data.characters.items() %}
+                        {% if not char.alliance_id %}
+                            {% set without_alliance = without_alliance + 1 %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if without_alliance > 0 %}
+                    <div class="entity-item" data-alliance-id="none" data-type="alliance">
+                        <div class="entity-icon flex items-center justify-center bg-gray-600">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div class="entity-name">无联盟</div>
+                        <div class="entity-count">{{ without_alliance }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 公司列 -->
+            <div class="entity-column">
+                <div class="entity-header">公司</div>
+                <div class="entity-list" id="corporation-list">
+                    {% set corp_counts = {} %}
+                    {% for char_id, character in dscan.processed_data.characters.items() %}
+                        {% set corp_id = character.corporation_id|string %}
+                        {% if corp_id not in corp_counts %}
+                            {% set _ = corp_counts.update({corp_id: 1}) %}
+                        {% else %}
+                            {% set _ = corp_counts.update({corp_id: corp_counts[corp_id] + 1}) %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% for corp_id, count in corp_counts.items() %}
+                        {% set corp = dscan.processed_data.corporations[corp_id] %}
+                        {% set alliance_id = "none" %}
+                        {% for char_id, character in dscan.processed_data.characters.items() %}
+                            {% if character.corporation_id|string == corp_id and character.alliance_id %}
+                                {% set alliance_id = character.alliance_id|string %}                               
+                            {% endif %}
+                        {% endfor %}
+                        
+                        <div class="entity-item" data-corp-id="{{ corp.id }}" data-alliance-id="{{ alliance_id }}" data-type="corporation">
+                            <img src="https://images.evetech.net/corporations/{{ corp.id }}/logo?size=32" alt="{{ corp.name }}" class="entity-icon">
+                            <div class="entity-name">
+                                <span>{{ corp.name }}</span>
+                            </div>
+                            <div class="entity-count">{{ count }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- 角色列 -->
+            <div class="entity-column">
+                <div class="entity-header">角色</div>
+                <div class="entity-list" id="character-list">
+                    {% for char_id, character in dscan.processed_data.characters.items() %}
+                        {% set corp = dscan.processed_data.corporations[character.corporation_id|string] %}
+                        {% set alliance_id = "none" %}
+                        {% if character.alliance_id %}
+                            {% set alliance_id = character.alliance_id|string %}
+                        {% endif %}
+                        
+                        <div class="entity-item" data-char-id="{{ character.id }}" data-corp-id="{{ corp.id }}" data-alliance-id="{{ alliance_id }}" data-type="character">
+                            <img src="https://images.evetech.net/characters/{{ character.id }}/portrait?size=32" alt="{{ character.name }}" class="entity-icon">
+                            <div class="entity-name">{{ character.name }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // 复制链接功能
+    document.getElementById('copyLinkBtn').addEventListener('click', function() {
+        navigator.clipboard.writeText(window.location.href)
+            .then(() => {
+                alert('链接已复制到剪贴板');
+            })
+            .catch(err => {
+                console.error('复制失败:', err);
+                alert('复制失败，请手动复制链接');
+            });
+    });
+    
+    // 悬停交互功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const allianceItems = document.querySelectorAll('#alliance-list .entity-item');
+        const corporationItems = document.querySelectorAll('#corporation-list .entity-item');
+        const characterItems = document.querySelectorAll('#character-list .entity-item');
+        
+        // 构建关系映射表
+        const relationships = {
+            alliances: {},  // alliance_id -> {corps: [], chars: []}
+            corporations: {},  // corp_id -> {alliance: null, chars: []}
+            characters: {}  // char_id -> {alliance: null, corp: null}
+        };
+        
+        // 构建角色关系
+        characterItems.forEach(charItem => {
+            const charId = charItem.getAttribute('data-char-id');
+            const corpId = charItem.getAttribute('data-corp-id');
+            const allianceId = charItem.getAttribute('data-alliance-id');
+            
+            relationships.characters[charId] = {
+                alliance: allianceId,
+                corp: corpId
+            };
+            
+            // 更新军团关系
+            if (!relationships.corporations[corpId]) {
+                relationships.corporations[corpId] = {
+                    alliance: allianceId,
+                    chars: []
+                };
+            }
+            relationships.corporations[corpId].chars.push(charId);
+            
+            // 更新联盟关系
+            if (allianceId !== 'none') {
+                if (!relationships.alliances[allianceId]) {
+                    relationships.alliances[allianceId] = {
+                        corps: [],
+                        chars: []
+                    };
+                }
+                if (!relationships.alliances[allianceId].corps.includes(corpId)) {
+                    relationships.alliances[allianceId].corps.push(corpId);
+                }
+                relationships.alliances[allianceId].chars.push(charId);
+            }
+        });
+        
+        // 清除所有高亮并显示所有项目
+        function clearAllHighlights() {
+            document.querySelectorAll('.entity-item').forEach(item => {
+                item.classList.remove('highlighted');
+                item.style.display = ''; // 恢复显示所有项目
+            });
+        }
+        
+        // 联盟悬停事件
+        allianceItems.forEach(allianceItem => {
+            allianceItem.addEventListener('mouseenter', function() {
+                clearAllHighlights();
+                
+                // 高亮当前联盟
+                this.classList.add('highlighted');
+                
+                const allianceId = this.getAttribute('data-alliance-id');
+                const allianceRelation = relationships.alliances[allianceId] || { corps: [], chars: [] };
+                
+                // 显示并高亮相关军团
+                corporationItems.forEach(corpItem => {
+                    const corpId = corpItem.getAttribute('data-corp-id');
+                    if (allianceRelation.corps.includes(corpId)) {
+                        corpItem.classList.add('highlighted');
+                        corpItem.style.display = '';
+                    } else {
+                        corpItem.style.display = 'none';
+                    }
+                });
+                
+                // 显示并高亮相关角色
+                characterItems.forEach(charItem => {
+                    const charId = charItem.getAttribute('data-char-id');
+                    if (allianceRelation.chars.includes(charId)) {
+                        charItem.classList.add('highlighted');
+                        charItem.style.display = '';
+                    } else {
+                        charItem.style.display = 'none';
+                    }
+                });
+            });
+            
+            allianceItem.addEventListener('mouseleave', clearAllHighlights);
+        });
+        
+        // 军团悬停事件
+        corporationItems.forEach(corpItem => {
+            corpItem.addEventListener('mouseenter', function() {
+                clearAllHighlights();
+                
+                // 高亮当前军团
+                this.classList.add('highlighted');
+                
+                const corpId = this.getAttribute('data-corp-id');
+                const corpRelation = relationships.corporations[corpId] || { alliance: 'none', chars: [] };
+                
+                // 显示并高亮相关联盟
+                allianceItems.forEach(allianceItem => {
+                    if (allianceItem.getAttribute('data-alliance-id') === corpRelation.alliance) {
+                        allianceItem.classList.add('highlighted');
+                        allianceItem.style.display = '';
+                    } else {
+                        allianceItem.style.display = '';
+                    }
+                });
+                
+                // 显示并高亮相关角色
+                characterItems.forEach(charItem => {
+                    const charId = charItem.getAttribute('data-char-id');
+                    if (corpRelation.chars.includes(charId)) {
+                        charItem.classList.add('highlighted');
+                        charItem.style.display = '';
+                    } else {
+                        charItem.style.display = 'none';
+                    }
+                });
+            });
+            
+            corpItem.addEventListener('mouseleave', clearAllHighlights);
+        });
+        
+        // 角色悬停事件
+        characterItems.forEach(charItem => {
+            charItem.addEventListener('mouseenter', function() {
+                clearAllHighlights();
+                
+                // 高亮当前角色
+                this.classList.add('highlighted');
+                
+                const charId = this.getAttribute('data-char-id');
+                const charRelation = relationships.characters[charId] || { alliance: 'none', corp: null };
+                
+                // 显示并高亮相关联盟
+                allianceItems.forEach(allianceItem => {
+                    if (allianceItem.getAttribute('data-alliance-id') === charRelation.alliance) {
+                        allianceItem.classList.add('highlighted');
+                        allianceItem.style.display = '';
+                    } else {
+                        allianceItem.style.display = 'none';
+                    }
+                });
+                
+                // 显示并高亮相关军团
+                corporationItems.forEach(corpItem => {
+                    if (corpItem.getAttribute('data-corp-id') === charRelation.corp) {
+                        corpItem.classList.add('highlighted');
+                        corpItem.style.display = '';
+                    } else {
+                        corpItem.style.display = '';
+                    }
+                });
+            });
+            
+            charItem.addEventListener('mouseleave', clearAllHighlights);
+        });
+    });
+</script>
+{% endblock %}

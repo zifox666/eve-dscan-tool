@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}舰船扫描 - 功能开发中{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="card">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400">舰船扫描功能</h1>
+            <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+                返回首页
+            </a>
+        </div>
+        
+        <div class="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                        舰船扫描功能正在开发中，敬请期待！
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="space-y-4">
+            <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">即将推出的功能</h2>
+            <ul class="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                <li>舰船类型分析与统计</li>
+                <li>舰队组成可视化</li>
+                <li>威胁评估</li>
+                <li>历史数据对比</li>
+                <li>更多功能敬请期待...</li>
+            </ul>
+            
+            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <p class="text-gray-600 dark:text-gray-400">
+                    我们正在努力开发这一功能，如有任何建议或反馈，请联系我们。
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
