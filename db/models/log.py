@@ -1,6 +1,5 @@
-# db/models/log.py
+from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime
-from sqlalchemy.sql import func
 from db.database import Base
 
 
@@ -13,7 +12,7 @@ class RequestLog(Base):
     request_method = Column(String(10), nullable=False)  # 请求方法
     process_time = Column(Float, nullable=False)  # 处理时间
     status_code = Column(Integer, nullable=False)  # 状态码
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)  # 使用Python的datetime
 
     def __repr__(self):
         return f"<RequestLog(id={self.id}, client_ip={self.client_ip}, path={self.request_path})>"

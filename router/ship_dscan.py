@@ -9,8 +9,9 @@ import re
 from typing import List, Dict, Any, Optional, Tuple
 
 from config import settings
-from db.database import get_db, get_redis
+from db.database import get_db
 from db.models.dscan import ShipDScan
+from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, format_time_ago
 from utils.sqlite_helper import SQLiteHelper
 from utils.time import DateTimeEncoder
@@ -192,8 +193,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]]) -> Dict[str, Any]
 async def process_ship_dscan(
         request: Request,
         data: str = Query(...),
-        db: AsyncSession = Depends(get_db),
-        redis_conn: Redis = Depends(get_redis),
+        db: AsyncSession = Depends(get_db)
 ):
     """处理Ship DScan数据"""
     # 解析DScan数据
@@ -243,10 +243,9 @@ async def process_ship_dscan(
         "time_ago": format_time_ago(new_dscan.created_at)
     }
 
-    await redis_conn.set(
+    dscan_cache.set(
         cache_key,
-        json.dumps(dscan_data, cls=DateTimeEncoder),
-        ex=settings.REDIS_EXPIRE
+        dscan_data
     )
 
     # 重定向到查看页面
@@ -257,21 +256,19 @@ async def process_ship_dscan(
 async def view_ship_dscan(
         request: Request,
         short_id: str,
-        db: AsyncSession = Depends(get_db),
-        redis_conn: Redis = Depends(get_redis)
+        db: AsyncSession = Depends(get_db)
 ):
     """查看保存的Ship DScan数据"""
-    # 从Redis缓存获取数据
+    # 从缓存获取数据
     cache_key = f"ship_dscan:{short_id}"
-    cached_data = await redis_conn.get(cache_key)
+    cached_data = dscan_cache.get(cache_key)
 
-    # 从数据库查询记录以更新访问计数，无论是否有缓存
+    # 从数据库查询记录
     query = select(ShipDScan).where(ShipDScan.short_id == short_id)
     result = await db.execute(query)
     dscan = result.scalar_one_or_none()
 
     if not dscan:
-        # 如果没找到，返回404页面
         return templates.TemplateResponse(
             "404.html",
             {"request": request, "message": "找不到指定的舰船扫描数据"}
@@ -282,12 +279,9 @@ async def view_ship_dscan(
     await db.commit()
 
     if cached_data:
-        # 使用缓存数据，但更新访问次数
-        dscan_data = json.loads(cached_data)
-        # 更新缓存中的访问次数
+        dscan_data = cached_data
         dscan_data["view_count"] = dscan.view_count
     else:
-        # 构建响应数据
         dscan_data = {
             "id": dscan.id,
             "short_id": dscan.short_id,
@@ -298,13 +292,8 @@ async def view_ship_dscan(
         }
 
     # 更新缓存
-    await redis_conn.set(
-        cache_key,
-        json.dumps(dscan_data, cls=DateTimeEncoder),
-        ex=settings.REDIS_EXPIRE
-    )
+    dscan_cache.set(cache_key, dscan_data)
 
-    # 返回模板响应
     return templates.TemplateResponse(
         "ship_dscan.html",
         {

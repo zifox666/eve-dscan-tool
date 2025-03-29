@@ -7,7 +7,7 @@ jinja2
 python-multipart
 asyncio
 redis
-aiomysql
+aiosqlite
 python-dotenv
 aiofiles
 starlette

@@ -8,9 +8,10 @@ import json
 from typing import List, Dict, Any, Optional
 
 from config import settings
-from db.database import get_db, get_redis
+from db.database import get_db
 from db.models.dscan import LocalDScan
 from api.eve_api import get_character_ids, get_character_affiliations, get_names_for_ids
+from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, parse_local_dscan, organize_local_dscan_data, format_time_ago
 from utils.time import DateTimeEncoder
 
@@ -78,12 +79,11 @@ async def view_local_dscan(
         request: Request,
         short_id: str,
         db: AsyncSession = Depends(get_db),
-        redis_conn: Redis = Depends(get_redis)
 ):
     """查看保存的Local DScan数据"""
     # 从Redis缓存获取数据
     cache_key = f"local_dscan:{short_id}"
-    cached_data = await redis_conn.get(cache_key)
+    cached_data = dscan_cache.get(cache_key)
 
     # 从数据库查询记录以更新访问计数，无论是否有缓存
     query = select(LocalDScan).where(LocalDScan.short_id == short_id)
@@ -118,11 +118,7 @@ async def view_local_dscan(
         }
 
     # 更新缓存
-    await redis_conn.set(
-        cache_key,
-        json.dumps(dscan_data, cls=DateTimeEncoder),
-        ex=settings.REDIS_EXPIRE
-    )
+    dscan_cache.set(cache_key, dscan_data)
 
     # 渲染模板
     return templates.TemplateResponse(

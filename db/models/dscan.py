@@ -1,12 +1,30 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, Boolean, JSON
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON
+from sqlalchemy.types import TypeDecorator
+import json
 from datetime import datetime
 
 from db.database import Base
 
+
+# SQLite JSON处理（如果内置JSON类型有问题，可以启用此自定义类型）
+class JSONEncodedDict(TypeDecorator):
+    """将JSON结构表示为SQLite中的TEXT列"""
+    impl = Text
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            value = json.dumps(value)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            value = json.loads(value)
+        return value
+
+
 class LocalDScan(Base):
     __tablename__ = "local_dscan"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     short_id = Column(String(10), unique=True, index=True, nullable=False)
     raw_data = Column(Text, nullable=False)  # 原始上传数据
@@ -15,13 +33,14 @@ class LocalDScan(Base):
     view_count = Column(Integer, default=0)  # 访问次数
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def __repr__(self):
         return f"<LocalDScan(id={self.id}, short_id={self.short_id})>"
 
+
 class ShipDScan(Base):
     __tablename__ = "ship_dscan"
-    
+
     id = Column(Integer, primary_key=True, index=True)
     short_id = Column(String(10), unique=True, index=True, nullable=False)
     raw_data = Column(Text, nullable=False)  # 原始上传数据
@@ -30,6 +49,6 @@ class ShipDScan(Base):
     view_count = Column(Integer, default=0)  # 访问次数
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    
+
     def __repr__(self):
         return f"<ShipDScan(id={self.id}, short_id={self.short_id})>"

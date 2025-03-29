@@ -9,10 +9,10 @@ class Settings:
     APP_NAME = "EVE Online DScan Tool"
     APP_VERSION = "1.0.0"
     APP_DESCRIPTION = "A tool for analyzing EVE Online DScan data"
-    
-    # 数据库设置
-    DATABASE_URL = os.getenv("DATABASE_URL", "mysql+aiomysql://user:password@localhost:3306/dscan")
-    
+
+    # 储存数据 数据库设置
+    DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./dscan.sqlite")
+
     # Redis设置
     REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/5")
     REDIS_EXPIRE = 3600  # 缓存过期时间（秒）
@@ -38,7 +38,7 @@ class Settings:
     # 每批处理的最大角色数量（EVE API限制）
     MAX_CHARACTERS_PER_BATCH = 100
     
-    # SQLite数据库设置
+    # EVE SDE 只读数据库设置
     SQLITE_DB_PATH = os.getenv("SQLITE_DB_PATH", "./item_db_zh.sqlite")  # EVE数据库文件路径
 
 # 创建设置实例
