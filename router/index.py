@@ -19,15 +19,16 @@ async def index(request: Request):
         {"request": request, "title": settings.APP_NAME}
     )
 
+
 @router.post("/submit")
-async def submit_dscan(request: Request, dscan_data: str = Form(...)):
+async def submit_dscan(request: Request, dscan_data: str = Form(...), filter_distance: bool = Form(False)):
     """提交DScan数据，根据类型重定向到相应的处理页面"""
     # 检测DScan类型
     dscan_type = detect_dscan_type(dscan_data)
-    
+
     # 根据类型重定向
     if dscan_type == "local":
         return RedirectResponse(url=f"/c/process?data={dscan_data}", status_code=303)
     else:  # ship类型
-        return RedirectResponse(url=f"/v/process?data={dscan_data}", status_code=303)
-
+        filter_param = "&filter_distance=true" if filter_distance else ""
+        return RedirectResponse(url=f"/v/process?data={dscan_data}{filter_param}", status_code=303)

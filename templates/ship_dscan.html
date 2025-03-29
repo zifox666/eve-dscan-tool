@@ -64,8 +64,14 @@
         </div>
     </div>
 
+    {% if dscan.processed_data.filter_distance %}
+    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 rounded-md">仅显示有距离信息的扫描结果</span>
+    </div>
+    {% endif %}
+
     <div class="text-sm text-gray-600 dark:text-gray-400 mb-4 flex justify-between">
-        <span>创建于 {{ dscan.time_ago }}</span>
+        <span>创建于 {{ dscan.created_at }} ({{ dscan.time_ago }})</span>
         {% if dscan.processed_data.system_info and dscan.processed_data.system_info.system_name %}
         <span class="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 px-2 py-1 rounded-full text-xs font-medium">
             星系: {{ dscan.processed_data.system_info.system_name }}

@@ -193,6 +193,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]]) -> Dict[str, Any]
 async def process_ship_dscan(
         request: Request,
         data: str = Query(...),
+        filter_distance: bool = Query(False),
         db: AsyncSession = Depends(get_db)
 ):
     """处理Ship DScan数据"""
@@ -206,11 +207,16 @@ async def process_ship_dscan(
             {"request": request, "message": "无法解析舰船扫描数据，请检查格式是否正确"}
         )
 
+    if filter_distance:
+        ship_items = [item for item in ship_items if item.get('distance') and item.get('distance') != '-']
+
     # 从数据库获取舰船信息
     ship_items = get_ship_info_from_db(ship_items)
 
     # 组织数据
     result = organize_ship_dscan_data(ship_items)
+
+    result["filter_distance"] = filter_distance
 
     # 添加星系信息
     result["system_info"] = system_info
