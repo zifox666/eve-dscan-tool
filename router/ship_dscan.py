@@ -130,6 +130,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
             continue
 
         # 从SDE数据库获取对应语言的信息
+        print(language)
         type_info = eve_db.get_type_info(type_id, language)
         if not type_info:
             continue

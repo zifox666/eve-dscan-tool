@@ -2,6 +2,7 @@
 import sqlite3
 from typing import List, Dict, Any, Optional
 from functools import lru_cache
+
 from config import settings
 
 
@@ -9,14 +10,17 @@ class EVESqliteDB:
     """EVE SDE SQLite数据库访问类，支持多语言"""
 
     def __init__(self):
-        """初始化多语言EVE SQLite数据库连接"""
-        self.db_connections = {
-            "zh": None,
-            "en": None
-        }
-        self.cursors = {
-            "zh": None,
-            "en": None
+        """初始化EVE SQLite数据库连接"""
+        self.db_connection = None
+        self.cursor = None
+        # 翻译类型常量
+        self.TC_TYPE = 8  # 物品类型名称
+        self.TC_GROUP = 7  # 分组名称
+        self.TC_CATEGORY = 6  # 分类名称
+        # 支持的语言
+        self.LANGUAGES = {
+            "zh": "zh",  # 中文
+            "en": "en"  # 英文
         }
         # 初始化连接
         self.connect()
@@ -28,31 +32,50 @@ class EVESqliteDB:
         self.close()
 
     def connect(self):
-        """连接到所有语言的EVE SDE SQLite数据库"""
+        """连接到EVE SDE SQLite数据库"""
         try:
-            # 中文数据库连接
-            self.db_connections["zh"] = sqlite3.connect(settings.SQLITE_DB_ZH_PATH)
-            self.db_connections["zh"].row_factory = sqlite3.Row
-            self.cursors["zh"] = self.db_connections["zh"].cursor()
-
-            # 英文数据库连接
-            self.db_connections["en"] = sqlite3.connect(settings.SQLITE_DB_EN_PATH)
-            self.db_connections["en"].row_factory = sqlite3.Row
-            self.cursors["en"] = self.db_connections["en"].cursor()
-
+            self.db_connection = sqlite3.connect(settings.SQLITE_DB_PATH)
+            self.db_connection.row_factory = sqlite3.Row
+            self.cursor = self.db_connection.cursor()
             return True
         except Exception as e:
             print(f"连接EVE SDE数据库失败: {e}")
             return False
 
     def close(self):
-        """关闭所有数据库连接"""
-        for lang in self.cursors:
-            if self.cursors[lang]:
-                self.cursors[lang].close()
-        for lang in self.db_connections:
-            if self.db_connections[lang]:
-                self.db_connections[lang].close()
+        """关闭数据库连接"""
+        if self.cursor:
+            self.cursor.close()
+        if self.db_connection:
+            self.db_connection.close()
+
+    def _get_translation(self, key_id: int, tc_id: int, language: str) -> Optional[str]:
+        """获取指定ID的翻译文本
+
+        Args:
+            key_id: 键ID（物品ID、分组ID或分类ID）
+            tc_id: 翻译类别ID (5=type, 7=group, 6=category)
+            language: 语言代码
+
+        Returns:
+            翻译文本，如果未找到则返回None
+        """
+        if not self.cursor:
+            return None
+
+        try:
+            self.cursor.execute("""
+                SELECT text FROM trnTranslations 
+                WHERE keyID = ? AND tcID = ? AND languageID = ?
+            """, (key_id, tc_id, language))
+
+            row = self.cursor.fetchone()
+            if row:
+                return row["text"]
+            return None
+        except Exception as e:
+            print(f"获取翻译失败: {e}")
+            return None
 
     @lru_cache(maxsize=1024)
     def get_type_info(self, type_id: int, language: str = "zh") -> Optional[Dict[str, Any]]:
@@ -65,30 +88,49 @@ class EVESqliteDB:
         Returns:
             包含类型信息的字典，如果未找到则返回None
         """
-        if language not in self.cursors:
+        if language not in self.LANGUAGES:
             language = "zh"  # 默认回退到中文
 
-        cursor = self.cursors[language]
-        if not cursor:
+        if not self.cursor:
             return None
 
         try:
-            # 从新的types表获取信息
-            cursor.execute("""
-                SELECT type_id, name, group_name, category_name, groupID, categoryID
-                FROM types
-                WHERE type_id = ?
+            # 获取物品基础信息
+            self.cursor.execute("""
+                SELECT t.typeID, t.groupID, t.typeName as default_name, 
+                       g.groupName as default_group_name, g.categoryID,
+                       c.groupName as default_category_name
+                FROM invTypes t
+                LEFT JOIN invGroups g ON t.groupID = g.groupID
+                LEFT JOIN invGroups c ON g.categoryID = c.groupID
+                WHERE t.typeID = ?
             """, (type_id,))
 
-            row = cursor.fetchone()
+            row = self.cursor.fetchone()
             if not row:
                 return None
 
             result = dict(row)
+
+            # 获取翻译
+            type_name = self._get_translation(type_id, self.TC_TYPE, language) or result["default_name"]
+            print(type_name, language)
+            group_id = result["groupID"]
+            group_name = self._get_translation(group_id, self.TC_GROUP, language) or result["default_group_name"]
+
+            category_id = result["categoryID"]
+            category_name = self._get_translation(category_id, self.TC_CATEGORY, language) or result[
+                "default_category_name"]
+
+            # 更新结果
+            result["name"] = type_name
+            result["group_name"] = group_name
+            result["category_name"] = category_name
+
             return result
 
         except Exception as e:
-            print(f"查询类型信息失败 ({language}): {e}")
+            print(f"查询类型信息失败: {e}")
             return None
 
     def get_type_infos(self, type_ids: List[int], language: str = "zh") -> Dict[int, Dict[str, Any]]:
@@ -114,5 +156,5 @@ class EVESqliteDB:
         return result
 
 
-# 创建全局数据库实例
+# 创建全局��据库实例
 eve_db = EVESqliteDB()
