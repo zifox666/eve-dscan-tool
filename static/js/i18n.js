@@ -1,4 +1,4 @@
-// 获取默认语言，优先使用本地存储的语言，其次使用浏览器语言，最后默认为英文
+// 获取默认语言，优先使用本地存储的语言，其次使用浏览器语言，最后默认为中文
 function getDefaultLanguage() {
   // 首先检查localStorage
   const savedLang = localStorage.getItem('language');
@@ -20,7 +20,7 @@ function getDefaultLanguage() {
   }
 
   // 默认使用中文
-  return 'en';
+  return 'zh';
 }
 
 // 从cookie中获取语言设置
@@ -56,6 +56,9 @@ function switchLanguage(lang) {
   if (translations[lang]) {
     currentLang = lang;
     localStorage.setItem('language', lang);
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + 365);
+    document.cookie = `lang=${lang}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Lax`;
     updatePageTranslations();
   }
 }
@@ -66,12 +69,6 @@ function updatePageTranslations() {
     const key = element.getAttribute('data-i18n');
     element.textContent = translate(key);
   });
-
-  // 更新页面标题（如果存在翻译）
-  const titleText = translate('page_title');
-  if (titleText !== 'page_title') {
-    document.title = titleText + ' - Dscan.icu';
-  }
 
   // 更新占位符
   document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
@@ -97,6 +94,7 @@ function isCurrentLanguage(lang) {
 // 页面加载完成后初始化语言
 document.addEventListener('DOMContentLoaded', function() {
   // 应用初始语言设置
+  switchLanguage(currentLang);
   updatePageTranslations();
   console.log('当前语言设置为:', currentLang);
 });
