@@ -35,8 +35,6 @@ class Settings:
     MAX_CHARACTERS_PER_BATCH = 100
     
     # EVE SDE 只读数据库设置
-    # SQLITE_DB_ZH_PATH = os.getenv("SQLITE_DB_ZH_PATH", "./item_db_zh.sqlite")  # EVE数据库文件路径
-    # SQLITE_DB_EN_PATH = os.getenv("SQLITE_DB_EN_PATH", "./item_db_en.sqlite")  # EVE数据库文件路径
     SQLITE_DB_PATH = os.getenv("SQLITE_DB_EN_PATH", "./sqlite-latest.sqlite")
 
 # 创建设置实例
