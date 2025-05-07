@@ -7,7 +7,6 @@ from sqlalchemy.types import TypeDecorator
 from db.database import Base
 
 
-# SQLite JSON处理（如果内置JSON类型有问题，可以启用此自定义类型）
 class JSONEncodedDict(TypeDecorator):
     """将JSON结构表示为SQLite中的TEXT列"""
     impl = Text

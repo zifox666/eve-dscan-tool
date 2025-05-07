@@ -5,7 +5,6 @@ from sqlalchemy.pool import NullPool
 
 from config import settings
 
-# 创建异步数据库引擎
 async_engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
@@ -14,17 +13,15 @@ async_engine = create_async_engine(
     poolclass=NullPool,
 )
 
-# 创建异步会话工厂
 AsyncSessionLocal = sessionmaker(
     bind=async_engine,
     expire_on_commit=False,
     class_=AsyncSession,
 )
 
-# 创建基础模型类
 Base = declarative_base()
 
-# 获取数据库会话
+
 async def get_db():
     async with AsyncSessionLocal() as session:
         try:
@@ -32,11 +29,9 @@ async def get_db():
         finally:
             await session.close()
 
-# 初始化数据库
+
 async def init_db():
-    # 创建数据库表
     async with async_engine.begin() as conn:
-        # 导入所有模型以确保它们被注册
         await conn.run_sync(Base.metadata.create_all)
 
     print("Database initialized successfully")

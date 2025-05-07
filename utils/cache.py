@@ -40,5 +40,4 @@ class Cache:
             del self.cache[k]
 
 
-# 创建全局缓存实例
 dscan_cache = Cache()

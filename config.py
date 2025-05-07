@@ -2,14 +2,14 @@ import os
 
 from dotenv import load_dotenv
 
-# 加载环境变量
+
 load_dotenv()
 
 
 class Settings:
     # 应用设置
     APP_NAME = "EVE Online DScan Tool"
-    APP_VERSION = "1.0.1"
+    APP_VERSION = "1.1.0"
     APP_DESCRIPTION = "A tool for analyzing EVE Online DScan data"
 
     # 储存数据 数据库设置
@@ -42,5 +42,4 @@ class Settings:
     SQLITE_DB_PATH = os.getenv("SQLITE_DB_EN_PATH", "./sqlite-latest.sqlite")
 
 
-# 创建设置实例
 settings = Settings()

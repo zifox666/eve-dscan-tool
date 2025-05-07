@@ -1,11 +1,13 @@
+from typing import Optional
+
 import httpx
 
 from config import settings
 
-# 全局HTTP客户端
-http_client = None
 
-# 初始化HTTP客户端
+http_client: Optional[httpx.AsyncClient] = None
+
+
 async def init_http_client():
     global http_client
     
@@ -17,8 +19,7 @@ async def init_http_client():
             proxies["http://"] = settings.HTTP_PROXY
         if settings.HTTPS_PROXY:
             proxies["https://"] = settings.HTTPS_PROXY
-    
-    # 创建客户端
+
     http_client = httpx.AsyncClient(
         timeout=settings.HTTP_TIMEOUT,
         limits=httpx.Limits(max_connections=settings.HTTP_MAX_CONNECTIONS),
@@ -32,7 +33,7 @@ async def init_http_client():
     
     print("HTTP client initialized successfully")
 
-# 关闭HTTP客户端
+
 async def close_http_client():
     global http_client
     if http_client:
@@ -40,7 +41,7 @@ async def close_http_client():
         http_client = None
         print("HTTP client closed successfully")
 
-# 获取HTTP客户端
+
 def get_http_client():
     global http_client
     if not http_client:

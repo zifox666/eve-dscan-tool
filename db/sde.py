@@ -17,12 +17,12 @@ class EVESqliteDB:
         self.TC_TYPE = 8  # 物品类型名称
         self.TC_GROUP = 7  # 分组名称
         self.TC_CATEGORY = 6  # 分类名称
-        # 支持的语言
+
         self.LANGUAGES = {
-            "zh": "zh",  # 中文
-            "en": "en"  # 英文
+            "zh": "zh",
+            "en": "en"
         }
-        # 初始化连接
+
         self.connect()
 
     def __enter__(self):
@@ -52,13 +52,11 @@ class EVESqliteDB:
     def _get_translation(self, key_id: int, tc_id: int, language: str) -> Optional[str]:
         """获取指定ID的翻译文本
 
-        Args:
-            key_id: 键ID（物品ID、分组ID或分类ID）
-            tc_id: 翻译类别ID (5=type, 7=group, 6=category)
-            language: 语言代码
+        :param key_id: 键ID（物品ID、分组ID或分类ID）
+        :param tc_id: 翻译类别ID (5=type, 7=group, 6=category)
+        :param language: 语言代码
 
-        Returns:
-            翻译文本，如果未找到则返回None
+        :return: 翻译文本，如果未找到则返回None
         """
         if not self.cursor:
             return None
@@ -81,12 +79,10 @@ class EVESqliteDB:
     def get_type_info(self, type_id: int, language: str = "zh") -> Optional[Dict[str, Any]]:
         """根据type_id获取指定语言的类型信息
 
-        Args:
-            type_id: 物品类型ID
-            language: 语言代码，支持"zh"和"en"，默认为"zh"
+        :param type_id: 物品类型ID
+        :param language: 语言代码，支持"zh"和"en"，默认为"zh"
 
-        Returns:
-            包含类型信息的字典，如果未找到则返回None
+        :return: 包含类型信息的字典，如果未找到则返回None
         """
         if language not in self.LANGUAGES:
             language = "zh"  # 默认回退到中文
@@ -95,7 +91,6 @@ class EVESqliteDB:
             return None
 
         try:
-            # 获取物品基础信息
             self.cursor.execute("""
                 SELECT t.typeID, t.groupID, t.typeName as default_name, 
                        g.groupName as default_group_name, g.categoryID,
@@ -112,7 +107,6 @@ class EVESqliteDB:
 
             result = dict(row)
 
-            # 获取翻译
             type_name = self._get_translation(type_id, self.TC_TYPE, language) or result["default_name"]
             print(type_name, language)
             group_id = result["groupID"]
@@ -122,7 +116,6 @@ class EVESqliteDB:
             category_name = self._get_translation(category_id, self.TC_CATEGORY, language) or result[
                 "default_category_name"]
 
-            # 更新结果
             result["name"] = type_name
             result["group_name"] = group_name
             result["category_name"] = category_name
@@ -136,18 +129,15 @@ class EVESqliteDB:
     def get_type_infos(self, type_ids: List[int], language: str = "zh") -> Dict[int, Dict[str, Any]]:
         """批量获取多个type_id的类型信息
 
-        Args:
-            type_ids: 类型ID列表
-            language: 语言代码，支持"zh"和"en"，默认为"zh"
+        :param type_ids: 类型ID列表
+        :param language: 语言代码，支持"zh"和"en"，默认为"zh"
 
-        Returns:
-            以type_id为键，类型信息为值的字典
+        :return: 以type_id为键，类型信息为值的字典
         """
         result = {}
         if not type_ids:
             return result
 
-        # 逐个获取信息，利用缓存提高性能
         for type_id in type_ids:
             info = self.get_type_info(type_id, language)
             if info:
@@ -156,5 +146,4 @@ class EVESqliteDB:
         return result
 
 
-# 创建全局��据库实例
 eve_db = EVESqliteDB()

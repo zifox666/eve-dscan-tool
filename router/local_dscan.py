@@ -14,10 +14,9 @@ from db.models.dscan import LocalDScan
 from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, parse_local_dscan, organize_local_dscan_data, format_time_ago
 
-# 创建路由
+
 router = APIRouter()
 
-# 设置模板
 templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 
 
@@ -25,8 +24,7 @@ templates = Jinja2Templates(directory=settings.TEMPLATES_DIR)
 async def process_local_dscan(
         request: Request,
         data: str = Form(...),
-        db: AsyncSession = Depends(get_db),
-        language: Optional[str] = Form(None)
+        db: AsyncSession = Depends(get_db)
 ):
     """处理Local DScan数据"""
     character_names = parse_local_dscan(data)
@@ -104,7 +102,6 @@ async def view_local_dscan(
         }
 
     dscan_cache.set(cache_key, dscan_data)
-    print(dscan_data)
 
     return templates.TemplateResponse(
         "local_dscan.html.jinja2",

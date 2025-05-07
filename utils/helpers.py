@@ -1,7 +1,7 @@
 import random
 import re
 import string
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
 
 
@@ -13,7 +13,7 @@ def generate_short_id(length: int = 10) -> str:
 
 def format_time_ago(dt: datetime) -> str:
     """将时间格式化为'xx分钟前'的形式"""
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     diff = now - dt
 
     if diff < timedelta(minutes=1):
@@ -61,9 +61,20 @@ def parse_local_dscan(dscan_text: str) -> List[str]:
     return lines
 
 
-def organize_local_dscan_data(character_names: List[str], affiliations: List[Dict[str, Any]],
-                              names: Dict[int, Dict[str, str]]) -> Dict[str, Any]:
-    """组织Local DScan的结果数据，用于前端展示和存储"""
+def organize_local_dscan_data(
+        character_names: List[str],
+        affiliations: List[Dict[str, Any]],
+        names: Dict[int, Dict[str, str]]
+) -> Dict[str, Any]:
+    """
+    组织Local DScan的结果数据，用于前端展示和存储
+
+    :param character_names: 角色名称列表(废弃)
+    :param affiliations: 角色的联盟和军团信息列表
+    :param names: 角色、军团和联盟的名称字典
+
+    :return: 组织好的数据字典
+    """
     result = {
         "alliances": {},  # 联盟信息
         "corporations": {},  # 军团信息
