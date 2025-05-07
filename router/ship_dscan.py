@@ -323,7 +323,7 @@ async def view_ship_dscan(
         dscan_cache.set(cache_key, dscan_data)
 
     return templates.TemplateResponse(
-        "ship_dscan.html",
+        "ship_dscan.html.jinja2",
         {
             "request": request,
             "title": "舰船扫描分析",

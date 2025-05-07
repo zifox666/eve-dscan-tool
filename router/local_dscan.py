@@ -104,9 +104,10 @@ async def view_local_dscan(
         }
 
     dscan_cache.set(cache_key, dscan_data)
+    print(dscan_data)
 
     return templates.TemplateResponse(
-        "local_dscan.html",
+        "local_dscan.html.jinja2",
         {
             "request": request,
             "title": f"Local DScan - Dscan.icu",

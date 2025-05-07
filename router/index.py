@@ -42,7 +42,7 @@ async def submit_dscan(
     # 根据类型重定向到POST处理路由
     if dscan_type == "local":
         return templates.TemplateResponse(
-            "redirect_form.html",
+            "redirect_form.html.jinja2",
             {
                 "request": request,
                 "action": "/c/process",
@@ -51,7 +51,7 @@ async def submit_dscan(
         )
     else:  # ship类型
         return templates.TemplateResponse(
-            "redirect_form.html",
+            "redirect_form.html.jinja2",
             {
                 "request": request,
                 "action": "/v/process",
