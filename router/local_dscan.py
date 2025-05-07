@@ -29,17 +29,13 @@ async def process_local_dscan(
         language: Optional[str] = Form(None)
 ):
     """处理Local DScan数据"""
-    # 解析DScan数据
     character_names = parse_local_dscan(data)
 
-    # 获取角色ID
     character_ids_map = await get_character_ids(character_names)
     character_ids = list(character_ids_map.values())
 
-    # 获取角色所属信息
     affiliations = await get_character_affiliations(character_ids)
 
-    # 收集需要查询名称的ID
     ids_to_query = set()
     for affiliation in affiliations:
         ids_to_query.add(affiliation["character_id"])
@@ -47,19 +43,14 @@ async def process_local_dscan(
         if "alliance_id" in affiliation:
             ids_to_query.add(affiliation["alliance_id"])
 
-    # 获取ID对应的名称
     names = await get_names_for_ids(list(ids_to_query))
 
-    # 组织数据
     result = organize_local_dscan_data(character_names, affiliations, names)
 
-    # 生成短链接ID
     short_id = generate_short_id(settings.SHORT_LINK_LENGTH)
 
-    # 获取客户端IP
     client_ip = request.client.host
 
-    # 保存到数据库
     new_dscan = LocalDScan(
         short_id=short_id,
         raw_data=data,
@@ -70,7 +61,6 @@ async def process_local_dscan(
     await db.commit()
     await db.refresh(new_dscan)
 
-    # 重定向到查看页面
     return RedirectResponse(url=f"/c/{short_id}", status_code=303)
 
 
@@ -81,36 +71,29 @@ async def view_local_dscan(
         db: AsyncSession = Depends(get_db),
 ):
     """查看保存的Local DScan数据"""
-    # 从Redis缓存获取数据
     cache_key = f"local_dscan:{short_id}"
     cached_data = dscan_cache.get(cache_key)
 
-    # 从数据库查询记录以更新访问计数，无论是否有缓存
     query = select(LocalDScan).where(LocalDScan.short_id == short_id)
     result = await db.execute(query)
     dscan = result.scalar_one_or_none()
 
     if not dscan:
-        # 如果没找到，返回404页面
         return templates.TemplateResponse(
             "404.html",
             {"request": request, "message": "找不到指定的本地扫描数据"}
         )
 
-    # 更新访问次数
     dscan.view_count += 1
     await db.commit()
 
     if cached_data:
-        # 使用缓存数据，但更新访问次数
         if isinstance(cached_data, str):
             dscan_data = json.loads(cached_data)
         else:
             dscan_data = cached_data
-        # 更新缓存中的访问次数
         dscan_data["view_count"] = dscan.view_count
     else:
-        # 构建响应数据
         dscan_data = {
             "id": dscan.id,
             "short_id": dscan.short_id,
@@ -120,10 +103,8 @@ async def view_local_dscan(
             "time_ago": format_time_ago(dscan.created_at)
         }
 
-    # 更新缓存
     dscan_cache.set(cache_key, dscan_data)
 
-    # 渲染模板
     return templates.TemplateResponse(
         "local_dscan.html",
         {

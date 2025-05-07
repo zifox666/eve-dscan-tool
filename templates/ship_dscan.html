@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyLinkBtn = document.getElementById('copyLinkBtn');
     if (copyLinkBtn) {
         copyLinkBtn.addEventListener('click', function() {
-            const baseUrl = '{{ base_url }}';
+            const baseUrl = window.location.href;
             navigator.clipboard.writeText(baseUrl).then(function() {
                 // 显示复制成功提示
                 const originalText = copyLinkBtn.innerHTML;

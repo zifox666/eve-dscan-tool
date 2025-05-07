@@ -456,23 +456,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 为角色添加悬停和点击事件
     characterItems.forEach(charItem => {
-        // 点击事件
-        charItem.addEventListener('click', function() {
-            // 如果已经选中当前项，则取消筛选
-            if (activeFilter === this) {
-                resetAllFilters();
-                return;
-            }
-
-            resetAllFilters();
-
-            // 高亮当前角色
-            this.classList.add('highlighted');
-            activeFilter = this;
-
-            filterByCharacter(this);
-        });
-
         // 悬停事件
         charItem.addEventListener('mouseenter', function() {
             if (activeFilter) return; // 如果有激活的筛选，不响应悬停
