@@ -1,7 +1,8 @@
-from typing import List, Dict, Any, Optional
-import json
+from typing import List, Dict, Any
+
 from api.client import get_http_client
 from config import settings
+
 
 # 获取角色ID
 async def get_character_ids(character_names: List[str]) -> Dict[str, int]:

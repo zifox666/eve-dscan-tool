@@ -1,4 +1,5 @@
 import httpx
+
 from config import settings
 
 # 全局HTTP客户端

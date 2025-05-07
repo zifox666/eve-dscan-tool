@@ -1,19 +1,18 @@
-from fastapi import APIRouter, Request, Form, Depends, Query
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 import json
-from typing import List, Dict, Any, Optional
+from typing import Optional
 
+from fastapi import APIRouter, Request, Form, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from api.eve_api import get_character_ids, get_character_affiliations, get_names_for_ids
 from config import settings
 from db.database import get_db
 from db.models.dscan import LocalDScan
-from api.eve_api import get_character_ids, get_character_affiliations, get_names_for_ids
 from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, parse_local_dscan, organize_local_dscan_data, format_time_ago
-from utils.time import DateTimeEncoder
 
 # 创建路由
 router = APIRouter()

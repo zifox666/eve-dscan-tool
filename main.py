@@ -1,19 +1,15 @@
-import os
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from starlette.middleware.base import BaseHTTPMiddleware
 
 # 导入自定义模块
 from api.client import init_http_client
+from db.database import init_db
+from router.index import router as index_router
 from router.local_dscan import router as local_dscan_router
 from router.ship_dscan import router as ship_dscan_router
-from router.index import router as index_router
-from config import settings
-from db.database import init_db
 from utils.middleware import CloudflareIPMiddleware, RequestLoggingMiddleware
 
 

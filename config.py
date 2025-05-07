@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 # 加载环境变量
@@ -32,7 +33,7 @@ class Settings:
     TEMPLATES_DIR = "templates"
     
     # 每批处理的最大角色数量（EVE API限制）
-    MAX_CHARACTERS_PER_BATCH = 100
+    MAX_CHARACTERS_PER_BATCH = 1000
     
     # EVE SDE 只读数据库设置
     SQLITE_DB_PATH = os.getenv("SQLITE_DB_EN_PATH", "./sqlite-latest.sqlite")

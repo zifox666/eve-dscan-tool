@@ -1,8 +1,9 @@
 import random
-import string
 import re
-from typing import List, Dict, Any, Optional, Tuple
+import string
 from datetime import datetime, timedelta
+from typing import List, Dict, Any
+
 
 # 生成随机短链接ID
 def generate_short_id(length: int = 10) -> str:

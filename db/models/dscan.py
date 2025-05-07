@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, Text, DateTime, JSON
-from sqlalchemy.types import TypeDecorator
 import json
 from datetime import datetime
+
+from sqlalchemy import Column, Integer, String, Text, DateTime, JSON
+from sqlalchemy.types import TypeDecorator
 
 from db.database import Base
 

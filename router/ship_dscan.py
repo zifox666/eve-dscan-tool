@@ -1,12 +1,10 @@
-from fastapi import APIRouter, Request, Form, Depends, Query
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from typing import List, Dict, Any
+
+from fastapi import APIRouter, Request, Form, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from redis.asyncio import Redis
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-import json
-import re
-from typing import List, Dict, Any, Optional, Tuple
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
 from db.database import get_db
@@ -15,7 +13,6 @@ from db.sde import eve_db
 from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, format_time_ago
 from utils.sqlite_helper import SQLiteHelper
-from utils.time import DateTimeEncoder
 
 # 创建路由
 router = APIRouter()

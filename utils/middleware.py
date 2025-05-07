@@ -1,7 +1,7 @@
-import time
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
-from sqlalchemy.ext.asyncio import AsyncSession
+
+import time
 from db.database import get_db
 
 
