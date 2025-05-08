@@ -13,20 +13,23 @@ def generate_short_id(length: int = 10) -> str:
 
 def format_time_ago(dt: datetime) -> str:
     """将时间格式化为'xx分钟前'的形式"""
-    now = datetime.now(timezone.utc)
-    diff = now - dt
+    now = datetime.utcnow()
+    try:
+        diff = now - dt
 
-    if diff < timedelta(minutes=1):
-        return "Recently"
-    elif diff < timedelta(hours=1):
-        minutes = diff.seconds // 60
-        return f"{minutes} min ago"
-    elif diff < timedelta(days=1):
-        hours = diff.seconds // 3600
-        return f"{hours} hours ago"
-    else:
-        days = diff.days
-        return f"{days} days ago"
+        if diff < timedelta(minutes=1):
+            return "Recently"
+        elif diff < timedelta(hours=1):
+            minutes = diff.seconds // 60
+            return f"{minutes} min ago"
+        elif diff < timedelta(days=1):
+            hours = diff.seconds // 3600
+            return f"{hours} hours ago"
+        else:
+            days = diff.days
+            return f"{days} days ago"
+    except:
+        return "Unknown time"
 
 
 def detect_dscan_type(dscan_text: str) -> str:
