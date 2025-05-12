@@ -108,7 +108,6 @@ class EVESqliteDB:
             result = dict(row)
 
             type_name = self._get_translation(type_id, self.TC_TYPE, language) or result["default_name"]
-            print(type_name, language)
             group_id = result["groupID"]
             group_name = self._get_translation(group_id, self.TC_GROUP, language) or result["default_group_name"]
 
@@ -144,6 +143,65 @@ class EVESqliteDB:
                 result[type_id] = info
 
         return result
+    
+
+    @lru_cache(maxsize=2048)
+    def get_system_id_by_en_name(self, system_name: str) -> Optional[Dict[str, Any]]:
+        try:
+            self.cursor.execute("""
+                SELECT itemID
+                FROM mapDenormalize
+                WHERE itemName = ?
+            """, (system_name,))
+
+            row = self.cursor.fetchone()
+            if row:
+                return row['itemID']
+            return None
+        except Exception as e:
+            print(f"获取system_id_by_name失败: {e}")
+            return None
+
+    @lru_cache(maxsize=2048)
+    def get_system_info_by_id(self, system_id: int) -> Optional[Dict[str, Any]]:
+        try:
+            self.cursor.execute("""
+                SELECT itemID, constellationID, regionID, itemName, security
+                FROM mapDenormalize
+                WHERE itemID = ?
+            """, (system_id,))
+
+            row = self.cursor.fetchone()
+            if row:
+                result = dict(row)
+
+                self.cursor.execute("""
+                    SELECT constellationName
+                    FROM mapConstellations
+                    WHERE constellationID = ?
+                """, (result["constellationID"],))
+                constellation_row = self.cursor.fetchone()
+                if constellation_row:
+                    result["constellationName"] = constellation_row["constellationName"]
+                else:
+                    result["constellationName"] = None
+
+                self.cursor.execute("""
+                    SELECT regionName
+                    FROM mapRegions
+                    WHERE regionID = ?
+                """, (result["regionID"],))
+                region_row = self.cursor.fetchone()
+                if region_row:
+                    result["regionName"] = region_row["regionName"]
+                else:
+                    result["regionName"] = None
+
+                return result
+            return None
+        except Exception as e:
+            print(f"获取翻译失败: {e}")
+            return None
 
 
 eve_db = EVESqliteDB()

@@ -165,33 +165,44 @@
 
     <!-- 右侧统计信息 -->
     <div id="stats" class="md:col-span-3">
-        <div class="flex justify-between items-center mb-1">
+        <div class="flex justify-between items-center">
             <div class="flex space-x-2">
-                <button id="copyLinkBtn" class="btn-secondary text-sm py-1 px-3 flex items-center h-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                    </svg>
-                    <span data-i18n="copy_link"></span>
-                </button>
                 <div class="text-sm text-gray-600 dark:text-gray-400 mb-4 flex h-10 ">
 
-                    {% if dscan.processed_data.system_info and dscan.processed_data.system_info.system_name %}
+                    {% if dscan.processed_data.system_info and dscan.processed_data.system_info.name %}
                     <div
-                        class="flex items-center p-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 rounded-full font-medium ">
-                        {{ dscan.processed_data.system_info.system_name }}
+                        class="flex items-center p-4 bg-primary-200 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 rounded-full font-medium ">
+                        {{ dscan.processed_data.system_info.name }}
+                        {% if dscan.processed_data.system_info.security %}
+                            ({{ dscan.processed_data.system_info.security }})
+                        {% endif %}
+
+                        {% if dscan.processed_data.system_info.regionName %}
+                            &laquo; {{ dscan.processed_data.system_info.regionName }}
+                        {% endif %}
                     </div>
                     {% endif %}
                 </div>
-
-                <!-- <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                    </svg>
-                    <span data-i18n="back_to_home"></span>
-                </a> -->
             </div>
+        </div>
+        <div class="flex space-x-2 mt-1">
+
+            <button id="copyLinkBtn" class="btn-secondary text-sm py-1 px-3 flex items-center h-10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                </svg>
+                <span data-i18n="copy_link"></span>
+            </button>
+
+
+            <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center  h-10">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                </svg>
+                <span data-i18n="back_to_home"></span>
+            </a>
         </div>
         {% if dscan.processed_data.filter_distance %}
         <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
@@ -199,7 +210,7 @@
                 data-i18n="only_have_distance">仅显示有距离信息的扫描结果</span>
         </div>
         {% endif %}
-        <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-4 mt-2">
             <span data-i18n="created_at"></span> {{ dscan.created_at }} ({{ dscan.time_ago }})</span>
         </div>
 

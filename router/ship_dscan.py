@@ -13,7 +13,9 @@ from db.sde import eve_db
 from utils.cache import dscan_cache
 from utils.helpers import generate_short_id, format_time_ago
 from utils.sqlite_helper import SQLiteHelper
+from utils.system_list import system_list_zh
 
+import re, math
 
 router = APIRouter()
 
@@ -24,9 +26,6 @@ def parse_ship_dscan(dscan_text: str) -> tuple[list[dict[str, int | str | None]]
     """解析舰船扫描数据，返回舰船信息列表"""
     lines = [line.strip() for line in dscan_text.strip().split('\n') if line.strip()]
     result = []
-
-    from utils.helpers import extract_system_info
-    system_info = extract_system_info(dscan_text)
 
     for line in lines:
         parts = line.split('\t')
@@ -52,7 +51,7 @@ def parse_ship_dscan(dscan_text: str) -> tuple[list[dict[str, int | str | None]]
 
             result.append(item)
 
-    return result, system_info
+    return result
 
 
 def get_ship_info_from_db(ship_items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -83,7 +82,7 @@ def get_ship_info_from_db(ship_items: List[Dict[str, Any]]) -> List[Dict[str, An
     return ship_items
 
 
-def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "zh") -> Dict[str, Any]:
+def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "zh", filter_distance: bool = False) -> Dict[str, Any]:
     """组织舰船扫描数据，按类型和分组分类，支持多语言"""
     # 旗舰类型组ID列表
     capital_group_ids = [30, 485, 547, 659, 883, 1538, 4594]
@@ -103,12 +102,48 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
             "capital_count": 0,
             "structure_count": 0,
             "misc_count": 0
-        }
+        },
+        "system_info": {
+            "name": None,
+            "id": None,
+            "region": None,
+            "constellation": None
+        },
     }
 
+    system_info_candidates = {}
+
+    
+
+# def extract_system_info(dscan_data: str) -> dict:
+#     """从DScan数据中提取星系信息"""
+#     system_info = {
+#         "system_name": None,
+#         "region_name": None
+#     }
+
+#     # 常见格式: "4-HWWF - SG.CN LifeStyle Market"
+#     match = re.search(system_pattern, dscan_data)
+#     if match:
+#         system_info["system_name"] = match.group(1).strip()
+
+#     return system_info
+
+    system_pattern = r'^(.+?)( [XIV]+) - '
+
     for item in ship_items:
+        match = re.search(system_pattern, item.get('name'))
+        if match:
+            if match.group(1).strip() not in system_info_candidates:
+                system_info_candidates[match.group(1).strip()] = 1
+            else:
+                system_info_candidates[match.group(1).strip()] += 1
+
         type_id = item.get('type_id')
         if not type_id:
+            continue
+        
+        if filter_distance and not (item.get('distance') and item.get('distance') != '-'):
             continue
 
         type_info = eve_db.get_type_info(type_id, language)
@@ -182,6 +217,27 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
             for group, types in sorted_groups
         }
 
+    system_name, _ = max(system_info_candidates.items(), key=lambda item: item[1])
+
+    if system_name is not None:
+        result["system_info"]["name"] = system_name
+
+        if language == "zh" and system_name in system_list_zh:
+            result["system_info"]["id"] = system_list_zh[system_name]
+        
+        if language == "en":
+            system_id = eve_db.get_system_id_by_en_name(system_name)
+            if system_id:
+                result["system_info"]["id"] = system_id
+
+        if result["system_info"]["id"]:
+            info = eve_db.get_system_info_by_id(result["system_info"]["id"])
+            result["system_info"]["region"] = info.get("regionID")
+            result["system_info"]["regionName"] = info.get("regionName")
+            result["system_info"]["constellation"] = info.get("constellationID")
+            result["system_info"]["constellationName"] = info.get("constellationName")
+            result["system_info"]["security"] = math.floor(info.get("security") * 100) / 100
+        
     return result
 
 
@@ -193,7 +249,7 @@ async def process_ship_dscan(
         db: AsyncSession = Depends(get_db)
 ):
     """处理Ship DScan数据，同时生成中英文版本"""
-    ship_items, system_info = parse_ship_dscan(data)
+    ship_items = parse_ship_dscan(data)
 
     if not ship_items:
         return templates.TemplateResponse(
@@ -201,24 +257,23 @@ async def process_ship_dscan(
             {"request": request, "message": "无法解析舰船扫描数据，请检查格式是否正确"}
         )
 
-    if filter_distance:
-        ship_items = [item for item in ship_items if item.get('distance') and item.get('distance') != '-']
 
     short_id = generate_short_id(settings.SHORT_LINK_LENGTH)
 
     client_ip = request.client.host
 
-    result_zh = organize_ship_dscan_data(ship_items, "zh")
-    result_en = organize_ship_dscan_data(ship_items, "en")
+    result_zh = organize_ship_dscan_data(ship_items, "zh", filter_distance)
+    result_en = organize_ship_dscan_data(ship_items, "en", filter_distance)
 
     for result in [result_zh, result_en]:
         result["filter_distance"] = filter_distance
-        result["system_info"] = system_info
 
     processed_data = {
         "zh": result_zh,
         "en": result_en
     }
+
+    print('eeeeeeeee', processed_data)
 
     new_dscan = ShipDScan(
         short_id=short_id,

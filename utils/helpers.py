@@ -1,5 +1,4 @@
 import random
-import re
 import string
 from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
@@ -40,23 +39,6 @@ def detect_dscan_type(dscan_text: str) -> str:
         return "local"
     else:
         return "ship"
-
-
-def extract_system_info(dscan_data: str) -> dict:
-    """从DScan数据中提取星系信息"""
-    system_info = {
-        "system_name": None,
-        "region_name": None
-    }
-
-    # 常见格式: "4-HWWF - SG.CN LifeStyle Market"
-    system_pattern = r'([A-Z0-9\-]+)\s*-\s*'
-    match = re.search(system_pattern, dscan_data)
-    if match:
-        system_info["system_name"] = match.group(1).strip()
-
-    return system_info
-
 
 def parse_local_dscan(dscan_text: str) -> List[str]:
     """解析Local DScan数据，返回角色名称列表"""
