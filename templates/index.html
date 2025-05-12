@@ -242,6 +242,9 @@ document.addEventListener('DOMContentLoaded', function() {
             let additions = [];
 
             for (const [shipKey, shipInfo] of Object.entries(reconShips)) {
+                if (!document.getElementById(`${shipKey}_count`)) {
+                    continue;
+                }
                 const count = parseInt(document.getElementById(`${shipKey}_count`).value);
                 for (let i = 0; i < count; i++) {
                     // 使用制表符(\t)替代空格来分隔数据

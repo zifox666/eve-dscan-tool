@@ -96,6 +96,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
         "capital_types": {},
         "structure_types": {},
         "misc_types": {},
+        "capital_group_ids": capital_group_ids,
         "stats": {
             "total_count": len(ship_items),
             "ship_count": 0,
@@ -120,8 +121,21 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
         type_name = type_info.get('name', 'Unknown')
 
         if category_id == 6:  # 舰船分类ID
+            # 普通舰船处理
+            if group_name not in result["ship_types"]:
+                result["ship_types"][group_name] = {}
+
+            if type_name in result["ship_types"][group_name]:
+                result["ship_types"][group_name][type_name] += 1
+            else:
+                result["ship_types"][group_name][type_name] = 1
+
+            result["stats"]["ship_count"] += 1
+
+            # 旗舰处理
             if group_id in capital_group_ids:
-                # 旗舰处理
+                result["stats"]["capital_count"] += 1
+
                 if group_name not in result["capital_types"]:
                     result["capital_types"][group_name] = {}
 
@@ -130,18 +144,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
                 else:
                     result["capital_types"][group_name][type_name] = 1
 
-                result["stats"]["capital_count"] += 1
-            else:
-                # 普通舰船处理
-                if group_name not in result["ship_types"]:
-                    result["ship_types"][group_name] = {}
 
-                if type_name in result["ship_types"][group_name]:
-                    result["ship_types"][group_name][type_name] += 1
-                else:
-                    result["ship_types"][group_name][type_name] = 1
-
-                result["stats"]["ship_count"] += 1
         elif category_id in structure_category_ids:
             # 建筑处理
             if group_name not in result["structure_types"]:

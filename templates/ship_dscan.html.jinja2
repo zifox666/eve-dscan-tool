@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}舰船扫描分析{% endblock %}
+{% block title2 %}
+<h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400" data-i18n="ship_dscan_title">舰船扫描分析结果</h1>
+{% endblock %}
 
 {% block head %}
 <style type="text/tailwindcss">
-.stat-card {
+    .stat-card {
     @apply bg-white dark:bg-gray-800 rounded-lg shadow p-2 flex flex-col items-center justify-center;
 }
 .stat-value {
@@ -20,10 +23,10 @@
     @apply bg-primary-600 dark:bg-primary-700 text-white font-bold py-2 px-4 text-center;
 }
 .entity-list {
-    @apply max-h-[70vh] overflow-y-auto;
+    @apply overflow-y-auto;
 }
 .entity-item {
-    @apply flex items-center p-2 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors duration-200;
+    @apply flex items-center p-1 px-4 border-b border-gray-200 dark:border-gray-700 cursor-pointer transition-colors duration-200;
 }
 .entity-item:hover {
     @apply bg-primary-100 dark:bg-primary-900/30;
@@ -38,202 +41,219 @@
     @apply text-xs text-gray-500 dark:text-gray-400;
 }
 .entity-distance {
-    @apply text-gray-600 dark:text-gray-400 text-sm bg-gray-100 dark:bg-gray-900 rounded-full px-2 py-1 ml-2;
+    @apply text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 rounded-full px-2 py-1 ml-2;
+}
+
+.entity-header {
+    @apply bg-primary-900;
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="max-w-6xl mx-auto">
-<div class="card mb-6">
-    <div class="flex justify-between items-center mb-4">
-        <h1 class="text-2xl font-bold text-primary-600 dark:text-primary-400" data-i18n="ship_dscan_title">舰船扫描分析结果</h1>
-        <div class="flex space-x-2">
-            <button id="copyLinkBtn" class="btn-secondary text-sm py-1 px-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                </svg>
-                <span data-i18n="copy_link"></span>
-            </button>
-            <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-                </svg>
-                <span data-i18n="back_to_home"></span>
-            </a>
-        </div>
-    </div>
-
-    {% if dscan.processed_data.filter_distance %}
-    <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 rounded-md" data-i18n="only_have_distance">仅显示有距离信息的扫描结果</span>
-    </div>
-    {% endif %}
-
-    <div class="text-sm text-gray-600 dark:text-gray-400 mb-4 flex justify-between">
-        <span><span data-i18n="created_at"></span> {{ dscan.created_at }} ({{ dscan.time_ago }})</span>
-        {% if dscan.processed_data.system_info and dscan.processed_data.system_info.system_name %}
-        <span class="bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 px-2 py-1 rounded-full text-xs font-medium">
-            <span data-i18n="system"></span> : {{ dscan.processed_data.system_info.system_name }}
-        </span>
-        {% endif %}
-    </div>
-
-    <!-- 统计信息 -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="stat-card">
-            <div class="stat-value">{{ dscan.processed_data.stats.total_count }}</div>
-            <div class="stat-label" data-i18n="total_count">总数量</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ dscan.processed_data.stats.ship_count }}</div>
-            <div class="stat-label" data-i18n="ship_count">舰船数量</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ dscan.processed_data.stats.capital_count }}</div>
-            <div class="stat-label" data-i18n="capital_count">旗舰数量</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-value">{{ dscan.processed_data.stats.structure_count }}</div>
-            <div class="stat-label" data-i18n="structure_count">建筑数量</div>
-        </div>
-    </div>
-
-    <!-- 四列布局：旗舰、普通舰船、建筑、其他 -->
-    <div class="space-y-2">
-        <!-- 舰船部分 -->
-        {% if dscan.processed_data.ship_types|length > 0 %}
-        <div class="card">
-            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="normal_ship">常规</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <!-- 舰船类型列 -->
-                <div class="entity-column">
-                    <div class="entity-header" data-i18n="ship_type">舰船类型</div>
-                    <div class="entity-list" id="ship-type-list">
-                        {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
-                            <div class="entity-item" data-ship-type="{{ ship_type }}" data-type="ship-type">
-                                <div class="entity-name">{{ ship_type }}</div>
-                                <div class="entity-distance">{{ ships|sum(attribute='count') }}</div>
+<div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-8 gap-2">
+    <!-- 左侧内容 -->
+    <div class="md:col-span-5">
+        <div class="mb-6">
+            <div class="space-y-2">
+                <!-- 舰船部分 -->
+                {% if dscan.processed_data.ship_types|length > 0 %}
+                <div class="">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- 舰船类型列 -->
+                        <div class="entity-column">
+                            <div class="entity-header" data-i18n="ship_type">类型</div>
+                            <div class="entity-list" id="ship-type-list">
+                                {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
+                                <div class="entity-item" data-ship-type="{{ ship_type }}" data-type="ship-type">
+                                    <div class="entity-name">{{ ship_type }}</div>
+                                    <div class="entity-distance">{{ ships|sum(attribute='count') }}</div>
+                                </div>
+                                {% endfor %}
                             </div>
-                        {% endfor %}
+                        </div>
+                        <!-- 舰船名称列 -->
+                        <div class="entity-column">
+                            <div class="entity-header">&nbsp;</div>
+                            <div class="entity-list" id="ship-name-list">
+                                {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
+                                {% for ship in ships %}
+                                <div class="entity-item" data-ship-name="{{ ship.name }}"
+                                    data-ship-type="{{ ship_type }}" data-type="ship-name">
+                                    <div class="entity-name">{{ ship.name }}</div>
+                                    <div class="entity-distance">{{ ship.count }}</div>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <!-- 舰船名称列 -->
-                <div class="entity-column">
-                    <div class="entity-header" data-i18n="ship_name">舰船名称</div>
-                    <div class="entity-list" id="ship-name-list">
-                        {% for ship_type, ships in dscan.processed_data.ship_types.items() %}
-                            {% for ship in ships %}
-                            <div class="entity-item" data-ship-name="{{ ship.name }}" data-ship-type="{{ ship_type }}" data-type="ship-name">
-                                <div class="entity-name">{{ ship.name }}</div>
-                                <div class="entity-distance">{{ ship.count }}</div>
+                {% endif %}
+                <!-- 建筑部分 -->
+                {% if dscan.processed_data.structure_types|length > 0 %}
+                <div class="">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- 建筑类型列 -->
+                        <div class="entity-column">
+                            <div class="entity-header" data-i18n="ship_type_structure">建筑类型</div>
+                            <div class="entity-list" id="structure-type-list">
+                                {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
+                                <div class="entity-item" data-structure-type="{{ structure_type }}"
+                                    data-type="structure-type">
+                                    <div class="entity-name">{{ structure_type }}</div>
+                                    <div class="entity-distance">0</div>
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
-                        {% endfor %}
+                        </div>
+                        <!-- 建筑名称列 -->
+                        <div class="entity-column">
+                            <div class="entity-header">&nbsp;</div>
+                            <div class="entity-list" id="structure-name-list">
+                                {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
+                                {% for structure in structures %}
+                                <div class="entity-item" data-structure-name="{{ structure.name }}"
+                                    data-structure-type="{{ structure_type }}" data-type="structure-name">
+                                    <div class="entity-name">{{ structure.name }}</div>
+                                    <div class="entity-distance">{{ structure.count }}</div>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
                     </div>
                 </div>
+                {% endif %}
+                <!-- 其他部分 -->
+                {% if dscan.processed_data.misc_types|length > 0 %}
+                <div class="">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- 其他类型列 -->
+                        <div class="entity-column">
+                            <div class="entity-header" data-i18n="ship_type_other">其他类型</div>
+                            <div class="entity-list" id="misc-type-list">
+                                {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
+                                <div class="entity-item" data-misc-type="{{ misc_type }}" data-type="misc-type">
+                                    <div class="entity-name">{{ misc_type }}</div>
+                                    <div class="entity-distance">0</div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <!-- 其他名称列 -->
+                        <div class="entity-column">
+                            <div class="entity-header">&nbsp;</div>
+                            <div class="entity-list" id="misc-name-list">
+                                {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
+                                {% for misc in miscs %}
+                                <div class="entity-item" data-misc-name="{{ misc.name }}"
+                                    data-misc-type="{{ misc_type }}" data-type="misc-name">
+                                    <div class="entity-name">{{ misc.name }}</div>
+                                    <div class="entity-distance">{{ misc.count }}</div>
+                                </div>
+                                {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </div>
+    </div>
+
+    <!-- 右侧统计信息 -->
+    <div id="stats" class="md:col-span-3">
+        <div class="flex justify-between items-center mb-1">
+            <div class="flex space-x-2">
+                <button id="copyLinkBtn" class="btn-secondary text-sm py-1 px-3 flex items-center h-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                    </svg>
+                    <span data-i18n="copy_link"></span>
+                </button>
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-4 flex h-10 ">
+
+                    {% if dscan.processed_data.system_info and dscan.processed_data.system_info.system_name %}
+                    <div
+                        class="flex items-center p-4 bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-300 rounded-full font-medium ">
+                        {{ dscan.processed_data.system_info.system_name }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- <a href="/" class="btn-secondary text-sm py-1 px-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+                    </svg>
+                    <span data-i18n="back_to_home"></span>
+                </a> -->
+            </div>
+        </div>
+        {% if dscan.processed_data.filter_distance %}
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-2">
+            <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 rounded-md"
+                data-i18n="only_have_distance">仅显示有距离信息的扫描结果</span>
+        </div>
         {% endif %}
+        <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            <span data-i18n="created_at"></span> {{ dscan.created_at }} ({{ dscan.time_ago }})</span>
+        </div>
+
+
+
+
+        <!-- 统计信息 -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.total_count }}</div>
+                <div class="stat-label" data-i18n="total_count">总数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.ship_count }}</div>
+                <div class="stat-label" data-i18n="ship_count">舰船数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.capital_count }}</div>
+                <div class="stat-label" data-i18n="capital_count">旗舰数量</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">{{ dscan.processed_data.stats.structure_count }}</div>
+                <div class="stat-label" data-i18n="structure_count">建筑数量</div>
+            </div>
+        </div>
 
         <!-- 旗舰部分 -->
         {% if dscan.processed_data.capital_types|length > 0 %}
-        <div class="card">
-            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="capital">旗舰</h2>
+        <div class="text-xs">
             <div class="grid grid-cols-2 gap-4">
                 <!-- 旗舰类型列 -->
                 <div class="entity-column">
-                    <div class="entity-header" data-i18n="type">旗舰类型</div>
+                    <div class="entity-header" data-i18n="ship_type_cap">旗舰类型</div>
                     <div class="entity-list" id="capital-type-list">
                         {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
-                            <div class="entity-item" data-capital-type="{{ capital_type }}" data-type="capital-type">
-                                <div class="entity-name">{{ capital_type }}</div>
-                                <div class="entity-distance">{{ capitals|sum(attribute='count') }}</div>
-                            </div>
+                        <div class="entity-item" data-capital-type="{{ capital_type }}" data-type="capital-type">
+                            <div class="entity-name">{{ capital_type }}</div>
+                            <div class="entity-distance">{{ capitals|sum(attribute='count') }}</div>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
                 <!-- 旗舰名称列 -->
                 <div class="entity-column">
-                    <div class="entity-header" data-i18n="name">旗舰名称</div>
+                    <div class="entity-header">&nbsp;</div>
                     <div class="entity-list" id="capital-name-list">
                         {% for capital_type, capitals in dscan.processed_data.capital_types.items() %}
-                            {% for capital in capitals %}
-                            <div class="entity-item" data-capital-name="{{ capital.name }}" data-capital-type="{{ capital_type }}" data-type="capital-name">
-                                <div class="entity-name">{{ capital.name }}</div>
-                                <div class="entity-distance">{{ capital.count }}</div>
-                            </div>
-                            {% endfor %}
+                        {% for capital in capitals %}
+                        <div class="entity-item" data-capital-name="{{ capital.name }}"
+                            data-capital-type="{{ capital_type }}" data-type="capital-name">
+                            <div class="entity-name">{{ capital.name }}</div>
+                            <div class="entity-distance">{{ capital.count }}</div>
+                        </div>
                         {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- 建筑部分 -->
-        {% if dscan.processed_data.structure_types|length > 0 %}
-        <div class="card">
-            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="structure">建筑</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <!-- 建筑类型列 -->
-                <div class="entity-column">
-                    <div class="entity-header" data-i18n="type">建筑类型</div>
-                    <div class="entity-list" id="structure-type-list">
-                        {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
-                            <div class="entity-item" data-structure-type="{{ structure_type }}" data-type="structure-type">
-                                <div class="entity-name">{{ structure_type }}</div>
-                                <div class="entity-distance">0</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <!-- 建筑名称列 -->
-                <div class="entity-column">
-                    <div class="entity-header" data-i18n="name">建筑名称</div>
-                    <div class="entity-list" id="structure-name-list">
-                        {% for structure_type, structures in dscan.processed_data.structure_types.items() %}
-                            {% for structure in structures %}
-                            <div class="entity-item" data-structure-name="{{ structure.name }}" data-structure-type="{{ structure_type }}" data-type="structure-name">
-                                <div class="entity-name">{{ structure.name }}</div>
-                                <div class="entity-distance">{{ structure.count }}</div>
-                            </div>
-                            {% endfor %}
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- 其他部分 -->
-        {% if dscan.processed_data.misc_types|length > 0 %}
-        <div class="card">
-            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="other">其他</h2>
-            <div class="grid grid-cols-2 gap-4">
-                <!-- 其他类型列 -->
-                <div class="entity-column">
-                    <div class="entity-header" data-i18n="type">其他类型</div>
-                    <div class="entity-list" id="misc-type-list">
-                        {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
-                            <div class="entity-item" data-misc-type="{{ misc_type }}" data-type="misc-type">
-                                <div class="entity-name">{{ misc_type }}</div>
-                                <div class="entity-distance">0</div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <!-- 其他名称列 -->
-                <div class="entity-column">
-                    <div class="entity-header" data-i18n="name">其他名称</div>
-                    <div class="entity-list" id="misc-name-list">
-                        {% for misc_type, miscs in dscan.processed_data.misc_types.items() %}
-                            {% for misc in miscs %}
-                            <div class="entity-item" data-misc-name="{{ misc.name }}" data-misc-type="{{ misc_type }}" data-type="misc-name">
-                                <div class="entity-name">{{ misc.name }}</div>
-                                <div class="entity-distance">{{ misc.count }}</div>
-                            </div>
-                            {% endfor %}
                         {% endfor %}
                     </div>
                 </div>
@@ -241,157 +261,155 @@
         </div>
         {% endif %}
     </div>
-
-
-</div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-// 复制链接功能
-document.addEventListener('DOMContentLoaded', function() {
-    const copyLinkBtn = document.getElementById('copyLinkBtn');
-    if (copyLinkBtn) {
-        copyLinkBtn.addEventListener('click', function() {
-            const baseUrl = window.location.href;
-            navigator.clipboard.writeText(baseUrl).then(function() {
-                // 显示复制成功提示
-                const originalText = copyLinkBtn.innerHTML;
-                copyLinkBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>复制成功';
-                setTimeout(function() {
-                    copyLinkBtn.innerHTML = originalText;
-                }, 2000);
+    // 复制链接功能
+    document.addEventListener('DOMContentLoaded', function () {
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', function () {
+                const baseUrl = window.location.href;
+                console.log(navigator);
+                navigator.clipboard.writeText(baseUrl).then(function () {
+                    // 显示复制成功提示
+                    const originalText = copyLinkBtn.innerHTML;
+                    copyLinkBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>复制成功';
+                    setTimeout(function () {
+                        copyLinkBtn.innerHTML = originalText;
+                    }, 2000);
+                });
             });
+        }
+
+        // 设置各类实体的交互和计数
+        setupEntityInteraction('ship-type-list', 'ship-name-list', 'ship-type');
+        setupEntityInteraction('capital-type-list', 'capital-name-list', 'capital-type');
+        setupEntityInteraction('structure-type-list', 'structure-name-list', 'structure-type');
+        setupEntityInteraction('misc-type-list', 'misc-name-list', 'misc-type');
+
+        // 按数量排序各类列表
+        sortListByCount('ship-name-list');
+        sortListByCount('capital-name-list');
+        sortListByCount('structure-name-list');
+        sortListByCount('misc-name-list');
+
+        // 同时也要排序类型列表，以保持一致性
+        sortListByCount('ship-type-list');
+        sortListByCount('capital-type-list');
+        sortListByCount('structure-type-list');
+        sortListByCount('misc-type-list');
+    });
+
+    // 通用实体交互设置函数
+    function setupEntityInteraction(typeListId, nameListId, typeAttr) {
+        const typeItems = document.querySelectorAll(`#${typeListId} .entity-item`);
+        const nameItems = document.querySelectorAll(`#${nameListId} .entity-item`);
+
+        // 清除高亮和显示状态
+        function clearHighlights() {
+            document.querySelectorAll(`#${typeListId} .entity-item, #${nameListId} .entity-item`).forEach(item => {
+                item.classList.remove('highlighted');
+                item.style.display = '';
+            });
+        }
+
+        // 类型项悬停事件
+        typeItems.forEach(typeItem => {
+            typeItem.addEventListener('mouseenter', function () {
+                clearHighlights();
+
+                // 高亮当前类型
+                this.classList.add('highlighted');
+                const type = this.getAttribute(`data-${typeAttr}`);
+
+                // 显示并高亮相关名称
+                nameItems.forEach(nameItem => {
+                    if (nameItem.getAttribute(`data-${typeAttr}`) === type) {
+                        nameItem.classList.add('highlighted');
+                        nameItem.style.display = '';
+                    } else {
+                        nameItem.style.display = 'none';
+                    }
+                });
+            });
+
+            typeItem.addEventListener('mouseleave', clearHighlights);
+        });
+
+        // 名称项悬停事件
+        nameItems.forEach(nameItem => {
+            nameItem.addEventListener('mouseenter', function () {
+                clearHighlights();
+
+                // 高亮当前名称
+                this.classList.add('highlighted');
+                const type = this.getAttribute(`data-${typeAttr}`);
+
+                // 高亮对应的类型
+                typeItems.forEach(typeItem => {
+                    if (typeItem.getAttribute(`data-${typeAttr}`) === type) {
+                        typeItem.classList.add('highlighted');
+                    }
+                });
+            });
+
+            nameItem.addEventListener('mouseleave', clearHighlights);
+        });
+
+        // 计算并更新类型计数
+        updateTypeCounts(typeListId, nameListId, typeAttr);
+    }
+
+    // 更新类型计数函数
+    function updateTypeCounts(typeListId, nameListId, typeAttr) {
+        const nameItems = document.querySelectorAll(`#${nameListId} .entity-item`);
+        const typeCounts = {};
+
+        // 统计每个类型的总数
+        nameItems.forEach(nameItem => {
+            const type = nameItem.getAttribute(`data-${typeAttr}`);
+            const countElem = nameItem.querySelector('.entity-distance');
+            const count = parseInt(countElem.textContent, 10) || 0;
+
+            if (!typeCounts[type]) {
+                typeCounts[type] = 0;
+            }
+            typeCounts[type] += count;
+        });
+
+        // 更新类型的数量显示
+        const typeItems = document.querySelectorAll(`#${typeListId} .entity-item`);
+        typeItems.forEach(typeItem => {
+            const type = typeItem.getAttribute(`data-${typeAttr}`);
+            const countElem = typeItem.querySelector('.entity-distance');
+
+            if (typeCounts[type]) {
+                countElem.textContent = typeCounts[type];
+            }
         });
     }
 
-    // 设置各类实体的交互和计数
-    setupEntityInteraction('ship-type-list', 'ship-name-list', 'ship-type');
-    setupEntityInteraction('capital-type-list', 'capital-name-list', 'capital-type');
-    setupEntityInteraction('structure-type-list', 'structure-name-list', 'structure-type');
-    setupEntityInteraction('misc-type-list', 'misc-name-list', 'misc-type');
+    // 按照数量从大到小排序列表项
+    function sortListByCount(listId) {
+        const list = document.getElementById(listId);
+        if (!list) return;
 
-    // 按数量排序各类列表
-    sortListByCount('ship-name-list');
-    sortListByCount('capital-name-list');
-    sortListByCount('structure-name-list');
-    sortListByCount('misc-name-list');
+        const items = Array.from(list.querySelectorAll('.entity-item'));
 
-    // 同时也要排序类型列表，以保持一致性
-    sortListByCount('ship-type-list');
-    sortListByCount('capital-type-list');
-    sortListByCount('structure-type-list');
-    sortListByCount('misc-type-list');
-});
+        // 按照数量从大到小排序
+        items.sort((a, b) => {
+            const countA = parseInt(a.querySelector('.entity-distance').textContent);
+            const countB = parseInt(b.querySelector('.entity-distance').textContent);
+            return countB - countA;
+        });
 
-// 通用实体交互设置函数
-function setupEntityInteraction(typeListId, nameListId, typeAttr) {
-    const typeItems = document.querySelectorAll(`#${typeListId} .entity-item`);
-    const nameItems = document.querySelectorAll(`#${nameListId} .entity-item`);
-
-    // 清除高亮和显示状态
-    function clearHighlights() {
-        document.querySelectorAll(`#${typeListId} .entity-item, #${nameListId} .entity-item`).forEach(item => {
-            item.classList.remove('highlighted');
-            item.style.display = '';
+        // 清空列表并按排序后的顺序重新添加
+        items.forEach(item => {
+            list.appendChild(item);
         });
     }
-
-    // 类型项悬停事件
-    typeItems.forEach(typeItem => {
-        typeItem.addEventListener('mouseenter', function() {
-            clearHighlights();
-
-            // 高亮当前类型
-            this.classList.add('highlighted');
-            const type = this.getAttribute(`data-${typeAttr}`);
-
-            // 显示并高亮相关名称
-            nameItems.forEach(nameItem => {
-                if (nameItem.getAttribute(`data-${typeAttr}`) === type) {
-                    nameItem.classList.add('highlighted');
-                    nameItem.style.display = '';
-                } else {
-                    nameItem.style.display = 'none';
-                }
-            });
-        });
-
-        typeItem.addEventListener('mouseleave', clearHighlights);
-    });
-
-    // 名称项悬停事件
-    nameItems.forEach(nameItem => {
-        nameItem.addEventListener('mouseenter', function() {
-            clearHighlights();
-
-            // 高亮当前名称
-            this.classList.add('highlighted');
-            const type = this.getAttribute(`data-${typeAttr}`);
-
-            // 高亮对应的类型
-            typeItems.forEach(typeItem => {
-                if (typeItem.getAttribute(`data-${typeAttr}`) === type) {
-                    typeItem.classList.add('highlighted');
-                }
-            });
-        });
-
-        nameItem.addEventListener('mouseleave', clearHighlights);
-    });
-
-    // 计算并更新类型计数
-    updateTypeCounts(typeListId, nameListId, typeAttr);
-}
-
-// 更新类型计数函数
-function updateTypeCounts(typeListId, nameListId, typeAttr) {
-    const nameItems = document.querySelectorAll(`#${nameListId} .entity-item`);
-    const typeCounts = {};
-
-    // 统计每个类型的总数
-    nameItems.forEach(nameItem => {
-        const type = nameItem.getAttribute(`data-${typeAttr}`);
-        const countElem = nameItem.querySelector('.entity-distance');
-        const count = parseInt(countElem.textContent, 10) || 0;
-
-        if (!typeCounts[type]) {
-            typeCounts[type] = 0;
-        }
-        typeCounts[type] += count;
-    });
-
-    // 更新类型的数量显示
-    const typeItems = document.querySelectorAll(`#${typeListId} .entity-item`);
-    typeItems.forEach(typeItem => {
-        const type = typeItem.getAttribute(`data-${typeAttr}`);
-        const countElem = typeItem.querySelector('.entity-distance');
-
-        if (typeCounts[type]) {
-            countElem.textContent = typeCounts[type];
-        }
-    });
-}
-
-// 按照数量从大到小排序列表项
-function sortListByCount(listId) {
-    const list = document.getElementById(listId);
-    if (!list) return;
-
-    const items = Array.from(list.querySelectorAll('.entity-item'));
-
-    // 按照数量从大到小排序
-    items.sort((a, b) => {
-        const countA = parseInt(a.querySelector('.entity-distance').textContent);
-        const countB = parseInt(b.querySelector('.entity-distance').textContent);
-        return countB - countA;
-    });
-
-    // 清空列表并按排序后的顺序重新添加
-    items.forEach(item => {
-        list.appendChild(item);
-    });
-}
 </script>
 {% endblock %}
