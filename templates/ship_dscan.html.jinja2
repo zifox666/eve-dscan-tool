@@ -5,13 +5,13 @@
 {% block head %}
 <style type="text/tailwindcss">
 .stat-card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow p-4 flex flex-col items-center justify-center;
+    @apply bg-white dark:bg-gray-800 rounded-lg shadow p-2 flex flex-col items-center justify-center;
 }
 .stat-value {
-    @apply text-2xl font-bold text-primary-600 dark:text-primary-400;
+    @apply text-xl font-bold text-primary-600 dark:text-primary-400;
 }
 .stat-label {
-    @apply text-sm text-gray-600 dark:text-gray-400 mt-1;
+    @apply text-xs text-gray-600 dark:text-gray-400;
 }
 .entity-column {
     @apply bg-white dark:bg-gray-800 rounded-lg overflow-hidden;
@@ -100,11 +100,11 @@
     </div>
 
     <!-- 四列布局：旗舰、普通舰船、建筑、其他 -->
-    <div class="space-y-4">
+    <div class="space-y-2">
         <!-- 舰船部分 -->
         {% if dscan.processed_data.ship_types|length > 0 %}
         <div class="card">
-            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4" data-i18n="normal_ship">常规</h2>
+            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="normal_ship">常规</h2>
             <div class="grid grid-cols-2 gap-4">
                 <!-- 舰船类型列 -->
                 <div class="entity-column">
@@ -139,7 +139,7 @@
         <!-- 旗舰部分 -->
         {% if dscan.processed_data.capital_types|length > 0 %}
         <div class="card">
-            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4" data-i18n="capital">旗舰</h2>
+            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="capital">旗舰</h2>
             <div class="grid grid-cols-2 gap-4">
                 <!-- 旗舰类型列 -->
                 <div class="entity-column">
@@ -174,7 +174,7 @@
         <!-- 建筑部分 -->
         {% if dscan.processed_data.structure_types|length > 0 %}
         <div class="card">
-            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4" data-i18n="structure">建筑</h2>
+            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="structure">建筑</h2>
             <div class="grid grid-cols-2 gap-4">
                 <!-- 建筑类型列 -->
                 <div class="entity-column">
@@ -209,7 +209,7 @@
         <!-- 其他部分 -->
         {% if dscan.processed_data.misc_types|length > 0 %}
         <div class="card">
-            <h2 class="text-xl font-bold text-primary-600 dark:text-primary-400 mb-4" data-i18n="other">其他</h2>
+            <h2 class="text-l font-bold text-primary-600 dark:text-primary-400 mb-2" data-i18n="other">其他</h2>
             <div class="grid grid-cols-2 gap-4">
                 <!-- 其他类型列 -->
                 <div class="entity-column">
@@ -271,6 +271,18 @@ document.addEventListener('DOMContentLoaded', function() {
     setupEntityInteraction('capital-type-list', 'capital-name-list', 'capital-type');
     setupEntityInteraction('structure-type-list', 'structure-name-list', 'structure-type');
     setupEntityInteraction('misc-type-list', 'misc-name-list', 'misc-type');
+
+    // 按数量排序各类列表
+    sortListByCount('ship-name-list');
+    sortListByCount('capital-name-list');
+    sortListByCount('structure-name-list');
+    sortListByCount('misc-name-list');
+
+    // 同时也要排序类型列表，以保持一致性
+    sortListByCount('ship-type-list');
+    sortListByCount('capital-type-list');
+    sortListByCount('structure-type-list');
+    sortListByCount('misc-type-list');
 });
 
 // 通用实体交互设置函数
@@ -359,6 +371,26 @@ function updateTypeCounts(typeListId, nameListId, typeAttr) {
         if (typeCounts[type]) {
             countElem.textContent = typeCounts[type];
         }
+    });
+}
+
+// 按照数量从大到小排序列表项
+function sortListByCount(listId) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+
+    const items = Array.from(list.querySelectorAll('.entity-item'));
+
+    // 按照数量从大到小排序
+    items.sort((a, b) => {
+        const countA = parseInt(a.querySelector('.entity-distance').textContent);
+        const countB = parseInt(b.querySelector('.entity-distance').textContent);
+        return countB - countA;
+    });
+
+    // 清空列表并按排序后的顺序重新添加
+    items.forEach(item => {
+        list.appendChild(item);
     });
 }
 </script>

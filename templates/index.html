@@ -53,7 +53,7 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                     <tr>
-                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">休津级 (Huginn)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200" data-i18n="Huginn">休津级 (Huginn)</td>
                                         <td class="px-3 py-2 whitespace-nowrap text-sm">
                                             <span id="huginn-count" class="text-gray-800 dark:text-gray-200">0</span>
                                             <input type="hidden" name="huginn_count" id="huginn_count" value="0">
@@ -66,7 +66,7 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">拉克希斯级 (Lachesis)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200" data-i18n="Lachesis">拉克希斯级 (Lachesis)</td>
                                         <td class="px-3 py-2 whitespace-nowrap text-sm">
                                             <span id="lachesis-count" class="text-gray-800 dark:text-gray-200">0</span>
                                             <input type="hidden" name="lachesis_count" id="lachesis_count" value="0">
@@ -79,20 +79,20 @@
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">白嘴鸦级 (Rook)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200" data-i18n="Rook">白嘴鸦级 (Rook)</td>
                                         <td class="px-3 py-2 whitespace-nowrap text-sm">
                                             <span id="rook-count" class="text-gray-800 dark:text-gray-200">0</span>
                                             <input type="hidden" name="rook_count" id="rook_count" value="0">
                                         </td>
                                         <td class="px-3 py-2 whitespace-nowrap text-sm">
                                             <div class="flex space-x-2">
-                                                <button type="button" class="recon-plus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="rook">+1</button>
-                                                <button type="button" class="recon-minus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="rook">-1</button>
+                                                <button type="button" class="recon-plus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="Rook">+1</button>
+                                                <button type="button" class="recon-minus px-2 py-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded" data-ship="Rook">-1</button>
                                             </div>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200">诅咒级 (Curse)</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-800 dark:text-gray-200" data-i18n="Curse">诅咒级 (Curse)</td>
                                         <td class="px-3 py-2 whitespace-nowrap text-sm">
                                             <span id="curse-count" class="text-gray-800 dark:text-gray-200">0</span>
                                             <input type="hidden" name="curse_count" id="curse_count" value="0">
@@ -131,13 +131,38 @@
 
 {% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');
     const submitBtn = document.getElementById('submitBtn');
 
-    form.addEventListener('submit', function() {
+    function disableButton() {
         submitBtn.disabled = true;
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
+
+    function enableButton() {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    form.addEventListener('submit', function (e) {
+        disableButton();
+
+        setTimeout(function () {
+            enableButton();
+        }, 500);
+    });
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) {
+            enableButton();
+        }
+    });
+
+    window.addEventListener('pageshow', function (event) {
+        if (event.persisted) {
+            enableButton();
+        }
     });
 });
 
@@ -168,10 +193,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 侦查舰信息配置
     const reconShips = {
-        'huginn': { id: 11961, name: '休津级', display: '休津级' },
-        'lachesis': { id: 11971, name: '拉克希斯级', display: '拉克希斯级' },
-        'rook': { id: 11959, name: '白嘴鸦级', display: '白嘴鸦级' },
-        'curse': { id: 20125, name: '诅咒级', display: '诅咒级' }
+        'Huginn': {id: 11961, name: '休津级', display: 'Huginn'},
+        'Lachesis': {id: 11971, name: '拉克希斯级', display: 'Lachesis'},
+        'Rook': {id: 11959, name: '白嘴鸦级', display: 'Rook'},
+        'Curse': {id: 20125, name: '诅咒级', display: 'Curse'}
     };
 
     // 切换折叠面板

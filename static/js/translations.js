@@ -1,4 +1,3 @@
-// static/js/translations.js
 const translations = {
   'zh': {
     // index
@@ -17,6 +16,12 @@ const translations = {
     'li1': '本地频道成员列表：复制本地频道成员列表并粘贴',
     'li2': '舰船扫描：使用DScan工具扫描后复制结果并粘贴',
     'li3': '分析结果可以通过生成的链接分享给他人',
+
+    // ship
+    'Huginn': '休津级',
+    'Lachesis': '拉克希斯级',
+    'Rook': '白嘴鸦级',
+    'Curse': '诅咒级',
 
     //local dscan
 
@@ -76,6 +81,12 @@ const translations = {
     'li1': 'Local channel member list: Copy the local channel member list and paste it',
     'li2': 'Ship scan: Copy the results after scanning with the DScan tool and paste them',
     'li3': 'The analysis results can be shared with others through the generated link',
+
+    // ship
+    'Huginn': 'Huginn',
+    'Lachesis': 'Lachesis',
+    'Rook': 'Rook',
+    'Curse': 'Curse',
 
     //local dscan
 

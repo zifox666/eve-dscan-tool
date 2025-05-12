@@ -89,27 +89,27 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen flex flex-col">
     <!-- 导航栏 -->
     <nav class="bg-white dark:bg-gray-800 shadow-md">
-        <div class="container mx-auto px-4 py-3">
+        <div class="container mx-auto px-2 py-2">
             <div class="flex justify-between items-center">
                 <a href="/"
-                    class="flex items-center space-x-2 text-2xl font-bold text-primary-600 dark:text-primary-400">
-                    <img src="/static/favicon.ico" alt="Logo" class="w-6 h-6">
+                    class="flex items-center space-x-1 text-xl font-bold text-primary-600 dark:text-primary-400">
+                    <img src="/static/favicon.ico" alt="Logo" class="w-5 h-5">
                     <span>Dscan.icu</span>
                 </a>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-3">
                     <!-- GitHub按钮 -->
                     <a href="https://github.com/zifox666/eve-dscan-tool" target="_blank"
-                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="GitHub">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                        class="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700" title="GitHub">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
                             <path fill-rule="evenodd" clip-rule="evenodd"
                                 d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.026 2.747-1.026.546 1.378.202 2.397.1 2.65.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.161 22 16.416 22 12c0-5.523-4.477-10-10-10z" />
                         </svg>
                     </a>
 
                     <!-- 截图按钮 -->
-                    <button id="screenshotBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                    <button id="screenshotBtn" class="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
                         title="截图整页">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -119,13 +119,13 @@
                     </button>
 
                     <!-- 暗黑模式切换按钮 -->
-                    <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden dark:block" fill="none"
+                    <button id="darkModeToggle" class="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                         </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 block dark:hidden" fill="none"
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 block dark:hidden" fill="none"
                             viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
@@ -134,15 +134,18 @@
 
                     <!-- 语言切换按钮 -->
                     <div class="relative">
-                        <button id="languageToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                        <button id="languageToggle" class="p-1.5 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
                             title="切换语言">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        <!-- 将p-2改为p-1.5 -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
                                 stroke="currentColor">
+                            <!-- 将h-6 w-6改为h-5 w-5 -->
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
                             </svg>
                             <span class="ml-1 text-xs font-bold" id="currentLangDisplay"></span>
                         </button>
+                        <!-- 下拉菜单部分保持不变 -->
                         <div id="languageDropdown"
                             class="hidden absolute right-0 mt-2 py-2 w-24 bg-white dark:bg-gray-800 rounded-md shadow-xl z-20">
                             <button
@@ -159,7 +162,7 @@
     </nav>
 
     <!-- 主要内容 -->
-    <main class="container mx-auto px-4 py-8 flex-grow">
+    <main class="container mx-auto px-4 py-4 flex-grow">
         {% block content %}{% endblock %}
     </main>
 
