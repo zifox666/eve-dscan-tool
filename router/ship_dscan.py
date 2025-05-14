@@ -217,7 +217,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
             for group, types in sorted_groups
         }
     system_name = None
-    if not system_info_candidates:
+    if system_info_candidates:
         system_name, _ = max(system_info_candidates.items(), key=lambda item: item[1])
 
     if system_name is not None:
