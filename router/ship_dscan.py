@@ -129,7 +129,7 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
 
 #     return system_info
 
-    system_pattern = r'^(.+?)( [XIV]+) - '
+    system_pattern = r'^(.+?)( [XIV]+)? - '
 
     for item in ship_items:
         match = re.search(system_pattern, item.get('name'))
@@ -216,8 +216,9 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
                     for type_name, count in sorted(types.items(), key=lambda x: x[1], reverse=True)]
             for group, types in sorted_groups
         }
-
-    system_name, _ = max(system_info_candidates.items(), key=lambda item: item[1])
+    system_name = None
+    if not system_info_candidates:
+        system_name, _ = max(system_info_candidates.items(), key=lambda item: item[1])
 
     if system_name is not None:
         result["system_info"]["name"] = system_name
