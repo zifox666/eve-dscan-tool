@@ -132,26 +132,26 @@ def organize_ship_dscan_data(ship_items: List[Dict[str, Any]], language: str = "
     system_pattern = r'^(.+?)( [XIV]+)? - '
 
     for item in ship_items:
-        match = re.search(system_pattern, item.get('name'))
-        if match:
-            if match.group(1).strip() not in system_info_candidates:
-                system_info_candidates[match.group(1).strip()] = 1
-            else:
-                system_info_candidates[match.group(1).strip()] += 1
-
         type_id = item.get('type_id')
         if not type_id:
-            continue
-        
-        if filter_distance and not (item.get('distance') and item.get('distance') != '-'):
             continue
 
         type_info = eve_db.get_type_info(type_id, language)
         if not type_info:
             continue
 
-        group_id = type_info.get('groupID')
         category_id = type_info.get('categoryID')
+        match = re.search(system_pattern, item.get('name'))
+        if (category_id != 6) and match:
+            if match.group(1).strip() not in system_info_candidates:
+                system_info_candidates[match.group(1).strip()] = 1
+            else:
+                system_info_candidates[match.group(1).strip()] += 1
+        
+        if filter_distance and not (item.get('distance') and item.get('distance') != '-'):
+            continue
+
+        group_id = type_info.get('groupID')
         group_name = type_info.get('group_name', '未知分组')
         type_name = type_info.get('name', 'Unknown')
 
