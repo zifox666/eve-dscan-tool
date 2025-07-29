@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -274,8 +274,6 @@ async def process_ship_dscan(
         "en": result_en
     }
 
-    print('eeeeeeeee', processed_data)
-
     new_dscan = ShipDScan(
         short_id=short_id,
         raw_data=data,
@@ -298,16 +296,29 @@ async def process_ship_dscan(
         }
         dscan_cache.set(cache_key, dscan_data)
 
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse(
+            status_code=201,
+            content={
+                "code": 201,
+                "msg": "成功",
+                "data": {
+                    "short_id": new_dscan.short_id,
+                    "view_url": f"/v/{new_dscan.short_id}",
+                }
+            }
+        )
+
     return RedirectResponse(url=f"/v/{short_id}", status_code=303)
 
 
-@router.get("/{short_id}", response_class=HTMLResponse)
+@router.get("/{short_id}")
 async def view_ship_dscan(
         request: Request,
         short_id: str,
         db: AsyncSession = Depends(get_db)
 ):
-    """查看保存的Ship DScan数据，支持语言切换"""
+    """查看保存的Ship DScan数据，支持语言切换，根据Accept头决定返回HTML或JSON"""
     lang = request.cookies.get("lang", "zh")
     if lang not in ["zh", "en"]:
         lang = "zh"
@@ -320,6 +331,15 @@ async def view_ship_dscan(
     dscan = result.scalar_one_or_none()
 
     if not dscan:
+        if "application/json" in request.headers.get("accept", ""):
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": 404,
+                    "msg": "找不到指定的舰船扫描数据",
+                    "data": {}
+                }
+            )
         return templates.TemplateResponse(
             "404.html",
             {"request": request, "message": "找不到指定的舰船扫描数据"}
@@ -345,6 +365,13 @@ async def view_ship_dscan(
         }
 
         dscan_cache.set(cache_key, dscan_data)
+
+    if "application/json" in request.headers.get("accept", ""):
+        return {
+            "code": 200,
+            "msg": "成功",
+            "data": dscan_data
+        }
 
     return templates.TemplateResponse(
         "ship_dscan.html.jinja2",

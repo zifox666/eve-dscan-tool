@@ -30,7 +30,7 @@ async def make_api_request(method, url, params=None, json=None, max_retries=3, r
                 logger.error(f"请求失败 ({url}): {str(e)}")
                 return None
 
-            logger.warning(f"请求失败，正在重试 {retries}/{max_retries}: {str(e)}")
+            logger.warning(f"请求失败，正在重试 {retries}/{max_retries}: {str(e)}\n{response.json()}")
             await asyncio.sleep(retry_delay * retries)
 
     return None

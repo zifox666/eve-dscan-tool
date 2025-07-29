@@ -2,7 +2,7 @@ import json
 from typing import Optional
 
 from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -59,10 +59,23 @@ async def process_local_dscan(
     await db.commit()
     await db.refresh(new_dscan)
 
+    if "application/json" in request.headers.get("accept", ""):
+        return JSONResponse(
+            status_code=201,
+            content={
+                "code": 201,
+                "msg": "成功",
+                "data": {
+                    "short_id": new_dscan.short_id,
+                    "view_url": f"/c/{new_dscan.short_id}",
+                }
+            }
+        )
+
     return RedirectResponse(url=f"/c/{short_id}", status_code=303)
 
 
-@router.get("/{short_id}", response_class=HTMLResponse)
+@router.get("/{short_id}")
 async def view_local_dscan(
         request: Request,
         short_id: str,
@@ -77,6 +90,15 @@ async def view_local_dscan(
     dscan = result.scalar_one_or_none()
 
     if not dscan:
+        if "application/json" in request.headers.get("accept", ""):
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "code": 404,
+                    "msg": "找不到指定的本地扫描数据",
+                    "data": {}
+                }
+            )
         return templates.TemplateResponse(
             "404.html",
             {"request": request, "message": "找不到指定的本地扫描数据"}
@@ -102,6 +124,13 @@ async def view_local_dscan(
         }
 
     dscan_cache.set(cache_key, dscan_data)
+
+    if "application/json" in request.headers.get("accept", ""):
+        return {
+            "code": 200,
+            "msg": "成功",
+            "data": dscan_data
+        }
 
     return templates.TemplateResponse(
         "local_dscan.html.jinja2",

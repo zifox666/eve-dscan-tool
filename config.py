@@ -36,7 +36,7 @@ class Settings:
     # 每批处理的最大角色数量（EVE API限制）
     MAX_CHARACTERS_PER_BATCH = 1000
     # 角色缓存天数
-    TTL_CHARACTER_CACHE_DAYS = 1
+    TTL_CHARACTER_CACHE_DAYS = 7
 
     # EVE SDE 只读数据库设置
     SQLITE_DB_PATH = os.getenv("SQLITE_DB_EN_PATH", "./sqlite-latest.sqlite")

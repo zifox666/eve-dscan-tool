@@ -133,9 +133,83 @@ const translations = {
 
 To add a new language, please add corresponding translation key-value pairs following the existing format, then submit a Pull Request.
 
+# API Support
+
+## Response Format
+
+All API endpoints support two response formats:
+- **HTML Response**: Default format, suitable for browser access
+- **JSON Response**: JSON format data is returned when the request header includes `Accept: application/json`
+- **i8n Support**: The response will be in the language specified by the `lang=en;` cookie or browser settings
+
+## DScan Processing Endpoints
+
+### Submit DScan Data
+
+- **POST** `/c/process` - Process local channel DScan data
+- **POST** `/v/process` - Process ship DScan data
+
+Submission format: Form data (`data` field contains DScan content)
+
+JSON response example:
+```json
+{
+  "code": 201,
+  "msg": "Success",
+  "data": {
+    "short_id": "abc123",
+    "view_url": "/c/abc123"
+  }
+}
+```
+
+### Get DScan Results
+
+- **GET** `/c/{short_id}` - Get local channel DScan analysis results
+- **GET** `/v/{short_id}` - Get ship DScan analysis results
+
+JSON response example:
+```json
+{
+  "code": 201,
+  "msg": "Success",
+  "data": {
+    "id": 123,
+    "short_id": "abc123",
+    "view_count": 5,
+    "created_at": "2025-07-29T12:34:56",
+    "time_ago": "2 hours ago"
+  }
+}
+```
+
+## Usage Examples
+
+Using curl to get DScan results in JSON format:
+```bash
+curl -H "Accept: application/json" https://dscan.icu/v/abc123
+```
+
+Using JavaScript to submit DScan data:
+```javascript
+fetch('/v/process', {
+  method: 'POST',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  cookie: 'lang=en;',
+  body: new URLSearchParams({
+    'data': dScanData
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
 ## TODO List
 
-- [ ] RESTful API interface
+- [x] RESTful API interface
 - [ ] API key authentication mechanism
 - [ ] Support for saving historical scan results
 - [ ] Support for more languages

@@ -133,9 +133,83 @@ const translations = {
 
 如需添加新语言，请按照现有格式添加相应的翻译键值对，然后提交 Pull Request。
 
+## API 支持
+
+### 响应格式
+
+所有API接口支持两种响应格式：
+- **HTML响应**：默认格式，适用于浏览器访问
+- **JSON响应**：当请求头中包含 `Accept: application/json` 时返回JSON格式数据
+- **多语言支持**：当cookie中包含 `lang=zh;` 时返回zh语言
+
+### DScan处理接口
+
+#### 提交DScan数据
+
+- **POST** `/c/process` - 处理本地频道DScan数据
+- **POST** `/v/process` - 处理舰船DScan数据
+
+提交格式：表单数据 (`data` 字段包含DScan内容)
+
+JSON响应示例：
+```json
+{
+  "code": 201,
+  "msg": "成功",
+  "data": {
+    "short_id": "abc123",
+    "view_url": "/c/abc123"
+  }
+}
+```
+
+#### 获取DScan结果
+
+- **GET** `/c/{short_id}` - 获取本地频道DScan分析结果
+- **GET** `/v/{short_id}` - 获取舰船DScan分析结果
+
+JSON响应示例：
+```json
+{
+  "code": 200,
+  "msg": "成功",
+  "data": {
+    "id": 123,
+    "short_id": "abc123",
+    "view_count": 5,
+    "created_at": "2025-07-29T12:34:56",
+    "time_ago": "2小时前"
+  }
+}
+```
+
+### 使用示例
+
+使用curl获取JSON格式的DScan结果：
+```bash
+curl -H "Accept: application/json" https://dscan.icu/v/abc123
+```
+
+使用JavaScript提交DScan数据：
+```javascript
+fetch('/v/process', {
+  method: 'POST',
+  headers: {
+    'Accept': 'application/json',
+    'Content-Type': 'application/x-www-form-urlencoded'
+  },
+  cookie: 'lang=zh;',
+  body: new URLSearchParams({
+    'data': dScanData
+  })
+})
+.then(response => response.json())
+.then(data => console.log(data));
+```
+
 ## TODO 列表
 
-- [ ] RESTful API接口
+- [x] RESTful API接口
 - [ ] API密钥认证机制
 - [ ] 支持保存历史扫描结果
 - [ ] 支持更多语言
