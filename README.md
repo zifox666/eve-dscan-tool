@@ -177,6 +177,7 @@ JSON响应示例：
     "id": 123,
     "short_id": "abc123",
     "view_count": 5,
+    "processed_data": {}, // 处理后的DScan数据
     "created_at": "2025-07-29T12:34:56",
     "time_ago": "2小时前"
   }

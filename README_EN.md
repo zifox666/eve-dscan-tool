@@ -177,6 +177,7 @@ JSON response example:
     "id": 123,
     "short_id": "abc123",
     "view_count": 5,
+    "processed_data": {}, // Processed DScan data
     "created_at": "2025-07-29T12:34:56",
     "time_ago": "2 hours ago"
   }
