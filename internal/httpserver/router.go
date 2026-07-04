@@ -9,9 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
 	"github.com/zifox666/eve-dscan-tool/internal/config"
+	"github.com/zifox666/eve-dscan-tool/internal/service/dscan"
 	"github.com/zifox666/eve-dscan-tool/internal/service/esi"
 	"github.com/zifox666/eve-dscan-tool/internal/service/sde"
 	"github.com/zifox666/eve-dscan-tool/internal/store/postgres"
+	redisstore "github.com/zifox666/eve-dscan-tool/internal/store/redis"
 	"gorm.io/gorm"
 )
 
@@ -24,6 +26,8 @@ type Server struct {
 	logs   *postgres.RequestLogRepository
 	esi    *esi.Client
 	sde    *sde.Service
+	dscans *dscan.Service
+	cache  *dscan.ResultCache
 }
 
 type ConfigView struct {
@@ -42,6 +46,7 @@ func NewRouter(cfg config.Config, logger *slog.Logger, db *gorm.DB, sdeDB *gorm.
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	jsonCache := redisstore.NewJSONCache(redisClient)
 	server := &Server{
 		config: ConfigView{
 			AppName:    cfg.AppName,
@@ -55,6 +60,8 @@ func NewRouter(cfg config.Config, logger *slog.Logger, db *gorm.DB, sdeDB *gorm.
 		logs:   postgres.NewRequestLogRepository(db),
 		esi:    esiClient,
 		sde:    sdeService,
+		dscans: dscan.NewService(postgres.NewDScanRepository(db), cfg.ShortLinkLength),
+		cache:  dscan.NewResultCache(jsonCache, cfg.DScanCacheTTL),
 	}
 
 	router := gin.New()
@@ -64,6 +71,15 @@ func NewRouter(cfg config.Config, logger *slog.Logger, db *gorm.DB, sdeDB *gorm.
 	router.GET("/", server.handleIndex)
 	router.GET("/healthz", server.handleHealth)
 	router.GET("/readyz", server.handleReady)
+	router.POST("/api/submit", server.handleSubmitDScan)
+	router.GET("/api/c/:short_id", server.handleViewLocalDScan)
+	router.GET("/api/v/:short_id", server.handleViewShipDScan)
+
+	router.POST("/submit", server.handleSubmitDScan)
+	router.POST("/c/process", server.handleProcessLocalDScan)
+	router.POST("/v/process", server.handleProcessShipDScan)
+	router.GET("/c/:short_id", server.handleViewLocalDScan)
+	router.GET("/v/:short_id", server.handleViewShipDScan)
 
 	return router
 }

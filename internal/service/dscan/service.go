@@ -26,6 +26,10 @@ func NewService(repo *postgres.DScanRepository, shortLinkLength int) *Service {
 	}
 }
 
+func (s *Service) Repository() *postgres.DScanRepository {
+	return s.repo
+}
+
 func (s *Service) CreateLocal(ctx context.Context, input CreateInput) (*model.LocalDScan, error) {
 	var lastErr error
 

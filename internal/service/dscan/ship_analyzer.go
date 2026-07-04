@@ -72,10 +72,10 @@ func OrganizeShipDScanData(ctx context.Context, sdeClient SDEClient, shipItems [
 		MiscTypes:         map[string][]TypeCount{},
 		CapitalGroupIDs:   []int64{30, 485, 547, 659, 883, 1538, 4594},
 		FilterDistance:    filterDistance,
-		internalShip:      map[string]map[string]int{},
-		internalCapital:   map[string]map[string]int{},
-		internalStructure: map[string]map[string]int{},
-		internalMisc:      map[string]map[string]int{},
+		internalShip:      map[string]map[string]internalTypeEntry{},
+		internalCapital:   map[string]map[string]internalTypeEntry{},
+		internalStructure: map[string]map[string]internalTypeEntry{},
+		internalMisc:      map[string]map[string]internalTypeEntry{},
 	}
 	result.Stats.TotalCount = len(shipItems)
 
@@ -90,7 +90,7 @@ func OrganizeShipDScanData(ctx context.Context, sdeClient SDEClient, shipItems [
 			return nil, err
 		}
 
-		if info.CategoryID != 6 {
+		if info.CategoryID == 65 || info.CategoryID == 2 {
 			if match := systemNamePattern.FindStringSubmatch(item.Name); len(match) > 1 {
 				systemCandidates[strings.TrimSpace(match[1])]++
 			}
@@ -102,17 +102,17 @@ func OrganizeShipDScanData(ctx context.Context, sdeClient SDEClient, shipItems [
 
 		switch {
 		case info.CategoryID == 6:
-			incrementType(result.internalShip, info.GroupName, info.Name)
+			incrementType(result.internalShip, info.GroupName, info.Name, item.TypeID)
 			result.Stats.ShipCount++
 			if _, ok := capitalGroupIDs[info.GroupID]; ok {
-				incrementType(result.internalCapital, info.GroupName, info.Name)
+				incrementType(result.internalCapital, info.GroupName, info.Name, item.TypeID)
 				result.Stats.CapitalCount++
 			}
 		case hasID(structureCategoryIDs, info.CategoryID):
-			incrementType(result.internalStructure, info.GroupName, info.Name)
+			incrementType(result.internalStructure, info.GroupName, info.Name, item.TypeID)
 			result.Stats.StructureCount++
 		default:
-			incrementType(result.internalMisc, info.GroupName, info.Name)
+			incrementType(result.internalMisc, info.GroupName, info.Name, item.TypeID)
 			result.Stats.MiscCount++
 		}
 	}
@@ -143,7 +143,12 @@ func OrganizeShipDScanData(ctx context.Context, sdeClient SDEClient, shipItems [
 	return result, nil
 }
 
-func incrementType(target map[string]map[string]int, group string, name string) {
+type internalTypeEntry struct {
+	ID    int64
+	Count int
+}
+
+func incrementType(target map[string]map[string]internalTypeEntry, group string, name string, typeID int64) {
 	if group == "" {
 		group = "Unknown"
 	}
@@ -151,12 +156,15 @@ func incrementType(target map[string]map[string]int, group string, name string) 
 		name = "Unknown"
 	}
 	if _, ok := target[group]; !ok {
-		target[group] = map[string]int{}
+		target[group] = map[string]internalTypeEntry{}
 	}
-	target[group][name]++
+	entry := target[group][name]
+	entry.Count++
+	entry.ID = typeID
+	target[group][name] = entry
 }
 
-func sortedTypeMap(source map[string]map[string]int) map[string][]TypeCount {
+func sortedTypeMap(source map[string]map[string]internalTypeEntry) map[string][]TypeCount {
 	groupNames := make([]string, 0, len(source))
 	for group := range source {
 		groupNames = append(groupNames, group)
@@ -172,12 +180,13 @@ func sortedTypeMap(source map[string]map[string]int) map[string][]TypeCount {
 			names = append(names, name)
 		}
 		sort.Slice(names, func(i, j int) bool {
-			return source[group][names[i]] > source[group][names[j]]
+			return source[group][names[i]].Count > source[group][names[j]].Count
 		})
 
 		counts := make([]TypeCount, 0, len(names))
 		for _, name := range names {
-			counts = append(counts, TypeCount{Name: name, Count: source[group][name]})
+			entry := source[group][name]
+			counts = append(counts, TypeCount{ID: entry.ID, Name: name, Count: entry.Count})
 		}
 		result[group] = counts
 	}
@@ -185,10 +194,10 @@ func sortedTypeMap(source map[string]map[string]int) map[string][]TypeCount {
 	return result
 }
 
-func groupTotal(types map[string]int) int {
+func groupTotal(types map[string]internalTypeEntry) int {
 	total := 0
-	for _, count := range types {
-		total += count
+	for _, entry := range types {
+		total += entry.Count
 	}
 	return total
 }
@@ -227,10 +236,10 @@ type ShipResult struct {
 	SystemInfo      ShipSystemInfo         `json:"system_info"`
 	FilterDistance  bool                   `json:"filter_distance"`
 
-	internalShip      map[string]map[string]int
-	internalCapital   map[string]map[string]int
-	internalStructure map[string]map[string]int
-	internalMisc      map[string]map[string]int
+	internalShip      map[string]map[string]internalTypeEntry
+	internalCapital   map[string]map[string]internalTypeEntry
+	internalStructure map[string]map[string]internalTypeEntry
+	internalMisc      map[string]map[string]internalTypeEntry
 }
 
 func (r *ShipResult) clearInternal() {
@@ -241,6 +250,7 @@ func (r *ShipResult) clearInternal() {
 }
 
 type TypeCount struct {
+	ID    int64  `json:"id,omitempty"`
 	Name  string `json:"name"`
 	Count int    `json:"count"`
 }

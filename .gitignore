@@ -186,6 +186,10 @@ cython_debug/
 *.test
 *.out
 
+# Frontend
+web/node_modules/
+web/dist/
+
 old/*
 
 .env.local
