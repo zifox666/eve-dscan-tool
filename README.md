@@ -17,66 +17,29 @@
 
 ## 私有化部署
 
-### SDE 数据下载
+### SDE 数据
 
-本工具依赖 EVE Online 的第三方维护数据库。首次使用请前往 [Fuzzwork](https://www.fuzzwork.co.uk/dump/) 下载最新的 SDE 数据库文件并解压，并将其放置在项目根目录下。
+本工具依赖 EVE Online 的第三方维护数据库。首次使用请前往 [eve-sde-convert](https://github.com/garveen/eve-sde-converter) 下载最新的 SDE 数据库文件导入pgsql数据库，支持独立于dscan数据部署sde数据库
 
-#### 自动下载SDE
-
-您可以使用以下命令自动下载并解压最新的SDE数据库：
-
-```bash
-wget https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2
-bunzip2 sqlite-latest.sqlite.bz2
-```
-
-确保解压后的文件名为`sqlite-latest.sqlite`并放置在项目根目录，或者修改`config.py`中的`SQLITE_DB_PATH`设置。
-
-### 标准部署
+### 快速开始
 
 1. 克隆仓库：
+
    ```bash
    git clone https://github.com/zifox/eve-dscan-tool.git
    cd dscan
    ```
 
-2. 安装依赖：
+2. 完善配置文件：
+
    ```bash
-   pip install -r requirements.txt
-   ```
-   
-3. 下载SDE并解压到dscan/：
-   ```bash
-   wget https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2
-   bunzip2 sqlite-latest.sqlite.bz2
+   vi docker-compose.yml
    ```
 
-4. 启动应用：
-   ```bash
-   uvicorn main:app --host 0.0.0.0 --port 8000
-   ```
+3. 启动应用：
 
-5. 访问 `http://localhost:8000` 开始使用
-
-### Docker 部署
-
-1. 构建 Docker 镜像：
    ```bash
-   docker build -t dscan .
-   ```
-   
-2. 下载 SDE 数据：
-   ```bash
-   wget https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2
-   bunzip2 sqlite-latest.sqlite.bz2
-   ```
-
-3. 运行容器：
-   ```bash
-   docker run -d -p 8000:8000 \
-      -v $(pwd)/dscan.sqlite:/app/dscan.sqlite \
-      -v $(pwd)/sqlite-latest.sqlite:/app/sqlite-latest.sqlite \
-      dscan
+   docker compose up -d
    ```
 
 4. 访问 `http://localhost:8000` 开始使用
@@ -92,22 +55,25 @@ bunzip2 sqlite-latest.sqlite.bz2
 ## 国际化支持
 
 本工具支持以下语言：
+
 - 中文（默认）
 - 英文
 
 语言选择会按以下优先级确定：
+
 1. 用户已保存的语言偏好（localStorage）
 2. 浏览器 Cookie 中的语言设置
 3. 浏览器语言
 4. 默认为中文
 
-可以通过界面的语言切换按钮手动更改语言。
+可以通过界面的语言切换按钮手动更改语言，本工具支持UI与游戏专有名词分开选择
 
 ### 参与国际化
 
-国际化文件位于 `static/js/translations.js`，您可以通过修改此文件添加新的语言支持。
+国际化文件位于 `web/src/i18n.js`，您可以通过修改此文件添加新的语言支持。
 
 <details>
+
   <summary>翻译示例</summary>
   
 ```javascript
@@ -129,6 +95,7 @@ const translations = {
   // 'de': { ... }
 }
 ```
+
 </details>
 
 如需添加新语言，请按照现有格式添加相应的翻译键值对，然后提交 Pull Request。
@@ -138,6 +105,7 @@ const translations = {
 ### 响应格式
 
 所有API接口支持两种响应格式：
+
 - **HTML响应**：默认格式，适用于浏览器访问
 - **JSON响应**：当请求头中包含 `Accept: application/json` 时返回JSON格式数据
 - **多语言支持**：当cookie中包含 `lang=zh;` 时返回zh语言
@@ -146,29 +114,31 @@ const translations = {
 
 #### 提交DScan数据
 
-- **POST** `/c/process` - 处理本地频道DScan数据
-- **POST** `/v/process` - 处理舰船DScan数据
+- **POST** `/api/submit` - 提交DScan数据进行分析
 
 提交格式：表单数据 (`data` 字段包含DScan内容)
 
 JSON响应示例：
+
 ```json
 {
-  "code": 201,
-  "msg": "成功",
-  "data": {
-    "short_id": "abc123",
-    "view_url": "/c/abc123"
-  }
+    "code": 201,
+    "msg": "成功",
+    "data": {
+        "type": "ship",
+        "short_id": "abc123",
+        "view_url": "/v/abc123"
+    }
 }
 ```
 
 #### 获取DScan结果
 
-- **GET** `/c/{short_id}` - 获取本地频道DScan分析结果
-- **GET** `/v/{short_id}` - 获取舰船DScan分析结果
+- **GET** `/api/c/{short_id}` - 获取本地频道DScan分析结果
+- **GET** `/api/v/{short_id}` - 获取舰船DScan分析结果
 
-JSON响应示例：
+JSON响应示例:
+
 ```json
 {
   "code": 200,
@@ -187,11 +157,13 @@ JSON响应示例：
 ### 使用示例
 
 使用curl获取JSON格式的DScan结果：
+
 ```bash
 curl -H "Accept: application/json" https://dscan.icu/v/abc123
 ```
 
 使用JavaScript提交DScan数据：
+
 ```javascript
 fetch('/v/process', {
   method: 'POST',

@@ -129,6 +129,7 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
 .venv
 env/
 venv/
@@ -179,3 +180,17 @@ cython_debug/
 # custom
 /sqlite-latest.sqlite
 /dscan.sqlite
+
+# Go build output
+*.exe
+*.test
+*.out
+
+# Frontend
+web/node_modules/
+web/dist/
+
+old/*
+
+.env.local
+docker-compose.*.yml
