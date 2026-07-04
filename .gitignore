@@ -193,3 +193,4 @@ web/dist/
 old/*
 
 .env.local
+docker-compose.*.yml
